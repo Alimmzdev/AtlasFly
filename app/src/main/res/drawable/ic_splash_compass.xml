@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Compass outer circle -->
+    <path
+        android:pathData="M54,54m-34,0a34,34 0,1 1,68 0a34,34 0,1 1,-68 0"
+        android:strokeColor="#058D9D"
+        android:strokeWidth="6"
+        android:fillColor="#00000000" />
+
+    <!-- North arrow -->
+    <path
+        android:pathData="M54,22L48,32L54,28L60,32Z"
+        android:fillColor="#058D9D" />
+
+    <!-- South arrow -->
+    <path
+        android:pathData="M54,86L48,76L54,80L60,76Z"
+        android:fillColor="#058D9D" />
+
+    <!-- East arrow -->
+    <path
+        android:pathData="M86,54L76,48L80,54L76,60Z"
+        android:fillColor="#058D9D" />
+
+    <!-- West arrow -->
+    <path
+        android:pathData="M22,54L32,48L28,54L32,60Z"
+        android:fillColor="#058D9D" />
+
+    <!-- Center dot -->
+    <path
+        android:pathData="M54,54m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
+        android:fillColor="#058D9D" />
+
+</vector>

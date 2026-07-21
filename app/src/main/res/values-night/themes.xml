@@ -4,7 +4,7 @@
     <style name="Theme.AtlasFly" parent="android:Theme.Material.Light.NoActionBar" />
 
     <style name="Theme.AtlasFly.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <item name="windowSplashScreenBackground">#191C1D</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_compass</item>
         <item name="windowSplashScreenIconBackgroundColor">#058D9D</item>
         <item name="postSplashScreenTheme">@style/Theme.AtlasFly</item>
