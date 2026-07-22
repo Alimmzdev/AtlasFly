@@ -24,4 +24,16 @@ dependencyResolutionManagement {
 
 rootProject.name = "AtlasFly"
 include(":app")
- 
+include(":core:design-system")
+include(":core:presentation")
+include(":core:data")
+include(":core:domain")
+include(":core:network")
+include(":core:local")
+include(":service:data")
+include(":service:domain")
+include(":feature:home")
+include(":feature:search")
+include(":feature:travel")
+include(":feature:flight")
+include(":feature:profile")
