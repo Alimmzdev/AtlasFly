@@ -45,6 +45,16 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    //Networking
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+
+    //Coil image loader
+    implementation(libs.coil.compose)
+    implementation(libs.coil.core)
+    implementation(libs.coil.network.ktor3)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
