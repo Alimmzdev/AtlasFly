@@ -31,7 +31,7 @@ class CryptoManager @Inject constructor(
                     clear()
                 }
             buildAead()
-        }
+    }
     }
 
     private fun buildAead(): Aead {
