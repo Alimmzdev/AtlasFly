@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -46,8 +48,12 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    //DI
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+
     //Networking
-    implementation(libs.ktor.client.core)
+    implementation(projects.core.network)
     implementation(libs.ktor.client.okhttp)
 
     //Coil image loader
