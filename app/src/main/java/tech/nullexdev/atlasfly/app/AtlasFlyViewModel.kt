@@ -1,4 +1,4 @@
-package tech.nullexdev.atlasfly
+package tech.nullexdev.atlasfly.app
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

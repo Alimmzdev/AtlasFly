@@ -1,4 +1,4 @@
-package tech.nullexdev.atlasfly
+package tech.nullexdev.atlasfly.app
 
 sealed interface AtlasFlyEvent {
 
