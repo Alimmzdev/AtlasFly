@@ -37,6 +37,12 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexplicit-backing-fields")
+    }
+}
+
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
@@ -55,6 +61,10 @@ dependencies {
     //Networking
     implementation(projects.core.network)
     implementation(libs.ktor.client.okhttp)
+
+    //Navigation
+    implementation(projects.core.navigation)
+    implementation(libs.nav3.ui)
 
     //Coil image loader
     implementation(libs.coil.compose)
