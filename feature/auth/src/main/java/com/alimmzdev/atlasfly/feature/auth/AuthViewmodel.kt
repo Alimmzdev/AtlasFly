@@ -2,13 +2,16 @@ package com.alimmzdev.atlasfly.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import auth.model.AuthError
 import auth.model.AuthProvider
+import auth.model.AuthProvider.*
 import auth.model.AuthResult
 import auth.usecase.IsAuthorizedUseCase
 import auth.usecase.LoginUseCase
 import auth.usecase.LogoutUseCase
 import auth.usecase.RefreshTokensUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +30,8 @@ class AuthViewModel @Inject constructor(
     private val _uiState: MutableStateFlow<AuthUiState> = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
+    private var loginJob: Job? = null
+
     init {
         checkAuthorized()
     }
@@ -34,13 +39,13 @@ class AuthViewModel @Inject constructor(
     fun onIntent(intent: AuthUiIntent) {
         when (intent) {
             is AuthUiIntent.EmailLogin ->
-                login(AuthProvider.EmailPassword(intent.email, intent.password))
+                login(EmailPassword(intent.email, intent.password))
 
             is AuthUiIntent.GoogleLogin ->
-                login(AuthProvider.Google(intent.idToken))
+                login(Google(intent.idToken))
 
             is AuthUiIntent.GithubLogin ->
-                login(AuthProvider.Github(intent.accesToken))
+                login(Github(intent.accesToken))
 
             is AuthUiIntent.RefreshTokens ->
                 refreshTokens()
@@ -50,24 +55,43 @@ class AuthViewModel @Inject constructor(
 
             is AuthUiIntent.DismissError ->
                 _uiState.update { it.copy(error = null) }
+
+            is AuthUiIntent.EmailChanged -> _uiState.update { it.copy(email = intent.value) }
+            is AuthUiIntent.PasswordChanged -> _uiState.update { it.copy(password = intent.value) }
+            AuthUiIntent.ForgotPasswordClicked -> {}
+            AuthUiIntent.NavigateToSignUp -> {}
         }
     }
 
     private fun checkAuthorized() {
         viewModelScope.launch {
+            _uiState.update { it.copy(isCheckingAuth = true) }
             val isAuthorized = isAuthorizedUseCase()
-            _uiState.update { it.copy(isLoggedIn = isAuthorized) }
+            _uiState.update { it.copy(isLoggedIn = isAuthorized, isCheckingAuth = false) }
         }
     }
 
     private fun login(provider: AuthProvider) {
-        viewModelScope.launch {
+        loginJob?.cancel() // supersede any in-flight login attempt
+        loginJob = viewModelScope.launch {
             loginUseCase(provider).collect { result ->
                 _uiState.update {
                     when (result) {
-                        is AuthResult.Loading -> it.copy(isLoading = true, error = null)
-                        is AuthResult.Success -> it.copy(isLoading = false, isLoggedIn = true)
-                        is AuthResult.Failure -> it.copy(isLoading = false, error = result.error)
+                        is AuthResult.Loading -> it.copy(
+                            isLoading = true,
+                            loadingProvider = provider,
+                            error = null,
+                        )
+                        is AuthResult.Success -> it.copy(
+                            isLoading = false,
+                            loadingProvider = null,
+                            isLoggedIn = true,
+                        )
+                        is AuthResult.Failure -> it.copy(
+                            isLoading = false,
+                            loadingProvider = null,
+                            error = result.error.takeIf { e -> e != AuthError.Cancelled },
+                        )
                     }
                 }
             }

@@ -47,11 +47,11 @@ class AuthRepositoryImpl @Inject constructor(
 }
 
 private fun Throwable.toAuthResultFailure(): AuthResult.Failure = when (this) {
-    is FirebaseAuthInvalidCredentialsException -> AuthResult.Failure(AuthError.INVALID_CREDENTIALS)
-    is FirebaseAuthInvalidUserException -> AuthResult.Failure(AuthError.USER_NOT_FOUND)
-    is FirebaseAuthUserCollisionException -> AuthResult.Failure(AuthError.ACCOUNT_EXISTS_DIFFERENT_PROVIDER)
-    is FirebaseTooManyRequestsException -> AuthResult.Failure(AuthError.TOO_MANY_ATTEMPTS)
-    is CancellationException -> AuthResult.Failure(AuthError.CANCELLED)
-    is IOException -> AuthResult.Failure(AuthError.NETWORK_ERROR)
-    else -> AuthResult.Failure(AuthError.UNKNOWN)
+    is FirebaseAuthInvalidCredentialsException -> AuthResult.Failure(AuthError.InvalidCredentials)
+    is FirebaseAuthInvalidUserException -> AuthResult.Failure(AuthError.UserNotFound)
+    is FirebaseAuthUserCollisionException -> AuthResult.Failure(AuthError.AccountExistsDifferentProvider)
+    is FirebaseTooManyRequestsException -> AuthResult.Failure(AuthError.TooManyAttempts)
+    is CancellationException -> AuthResult.Failure(AuthError.Cancelled)
+    is IOException -> AuthResult.Failure(AuthError.NetworkError)
+    else -> AuthResult.Failure(AuthError.Unknown())
 }

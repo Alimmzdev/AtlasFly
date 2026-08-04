@@ -29,21 +29,28 @@ android {
 }
 
 dependencies {
-    implementation(libs.firebase.auth)
     implementation(projects.service.domain)
 
+    // Firebase
+    implementation(libs.firebase.auth)
+
+    // Compose (managed by the BOM)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+    // Google Sign-In
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
-    implementation(libs.hilt.navigation.compose)
+    // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
 }

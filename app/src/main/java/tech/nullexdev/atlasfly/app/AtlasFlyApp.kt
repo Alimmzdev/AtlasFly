@@ -25,7 +25,7 @@ fun AtlasFlyApp(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backStack = remember {
-        mutableStateListOf<Any>(Routes.Auth.Login)
+        mutableStateListOf( if (uiState.isAuthorized) Routes.Home else Routes.Auth.Login)
     }
     Box(modifier = Modifier.fillMaxSize()) {
         NavDisplay(

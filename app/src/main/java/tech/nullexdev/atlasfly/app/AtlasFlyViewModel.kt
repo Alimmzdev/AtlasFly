@@ -2,6 +2,7 @@ package tech.nullexdev.atlasfly.app
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import auth.usecase.IsAuthorizedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class AtlasFlyViewModel @Inject constructor(
-    // private val authRepository: AuthRepository
+    private val isAuthorizedUseCase: IsAuthorizedUseCase,
 ) : ViewModel() {
 
 
@@ -28,10 +29,10 @@ class AtlasFlyViewModel @Inject constructor(
 
     private fun loadData() {
         viewModelScope.launch {
-            // Load data from repository
-            delay(2000.milliseconds)
+            val isAuthorized = isAuthorizedUseCase.invoke()
             _uiState.value = _uiState.value.copy(
-                isLoading = false
+                isLoading = false,
+                isAuthorized = isAuthorized,
             )
         }
     }
