@@ -2,6 +2,7 @@ package auth.datasource.remote
 
 import auth.model.AuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GithubAuthProvider
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.OAuthProvider
 import kotlinx.coroutines.tasks.await
@@ -29,11 +30,9 @@ class AuthRemoteDatasourceImpl @Inject constructor(
                 firebaseAuth.signInWithCredential(credential).await()
             }
 
-            is AuthProvider.Apple -> {
-                val credentialBuilder = OAuthProvider.newCredentialBuilder("apple.com")
-                    .setIdToken(provider.idToken)
-                provider.nonce?.let { credentialBuilder.setAccessToken(it) }
-                firebaseAuth.signInWithCredential(credentialBuilder.build()).await()
+            is AuthProvider.Github -> {
+                val credential = GithubAuthProvider.getCredential(provider.accessToken)
+                firebaseAuth.signInWithCredential(credential).await()
             }
         }
     }

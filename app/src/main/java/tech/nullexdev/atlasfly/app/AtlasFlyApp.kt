@@ -10,10 +10,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
+import com.alimmzdev.atlasfly.feature.auth.AuthScreen
+import tech.nullexdev.atlasfly.R
 import tech.nullexdev.atlasfly.core.navigation.Routes
 
 @Composable
@@ -49,7 +52,9 @@ fun AtlasFlyApp(
 private fun navEntry(key: Any): NavEntry<Any> {
     return when (key) {
         Routes.Auth.Login -> NavEntry(key) {
-            Text("Login Screen")
+            AuthScreen(
+                serverClientId = stringResource(R.string.default_web_client_id)
+            )
         }
         Routes.Auth.SignUp -> NavEntry(key) {
             Text("Sign Up Screen")
