@@ -6,6 +6,7 @@ import tech.nullexdev.atlasfly.core.local.model.AuthTokens
 interface AuthRemoteDatasource {
     suspend fun isAuthorized(): Boolean
     suspend fun login(provider: AuthProvider)
+    suspend fun signup(provider: AuthProvider.EmailPassword)
     suspend fun refreshTokens()
     suspend fun logout()
 }

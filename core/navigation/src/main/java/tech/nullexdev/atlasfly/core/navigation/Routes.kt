@@ -21,7 +21,9 @@ sealed interface Routes {
         data object Login : Auth
 
         @Serializable
-        data object SignUp : Auth
+        data class SignUpEmailVerification(
+            val email: String,
+        ) : Auth
 
         @Serializable
         data object ForgotPassword : Auth

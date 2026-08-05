@@ -31,7 +31,7 @@ internal fun SignInButton(
                 color = LocalContentColor.current
             )
         } else {
-            Text("Sign In")
+            Text("Sign In / Sign Up")
         }
     }
 }

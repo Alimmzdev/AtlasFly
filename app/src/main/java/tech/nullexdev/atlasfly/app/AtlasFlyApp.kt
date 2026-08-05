@@ -66,12 +66,15 @@ private fun navEntry(key: Routes, onNavigate: (route: Routes) -> Unit): NavEntry
                 serverClientId = stringResource(R.string.default_web_client_id),
                 onNavigateToHomeScreen = {
                     onNavigate(Routes.Home)
+                },
+                onNavigateToSignUpEmailVerification = { email ->
+                    onNavigate(Routes.Auth.SignUpEmailVerification(email))
                 }
             )
         }
 
-        Routes.Auth.SignUp -> NavEntry(key) {
-            Text("Sign Up Screen")
+        is Routes.Auth.SignUpEmailVerification -> NavEntry(key) {
+            Text(key.email)
         }
 
         Routes.Auth.ForgotPassword -> NavEntry(key) {

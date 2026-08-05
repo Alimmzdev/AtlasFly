@@ -36,13 +36,13 @@ import androidx.compose.ui.unit.dp
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import com.alimmzdev.atlasfly.feature.auth.components.AccountNotFoundDialog
 import com.alimmzdev.atlasfly.feature.auth.components.AuthHeader
 import com.alimmzdev.atlasfly.feature.auth.components.EmailField
 import com.alimmzdev.atlasfly.feature.auth.components.GithubLoginButton
 import com.alimmzdev.atlasfly.feature.auth.components.GoogleLoginButton
 import com.alimmzdev.atlasfly.feature.auth.components.PasswordField
 import com.alimmzdev.atlasfly.feature.auth.components.SignInButton
-import com.alimmzdev.atlasfly.feature.auth.components.WantsToSignUpDialog
 import com.alimmzdev.atlasfly.feature.auth.helpers.launchGitHubLogin
 import com.alimmzdev.atlasfly.feature.auth.helpers.launchGoogleLogin
 import kotlinx.coroutines.launch
@@ -57,6 +57,7 @@ fun AuthScreen(
         }, null
     ),
     onNavigateToHomeScreen: () -> Unit,
+    onNavigateToSignUpEmailVerification: (String) -> Unit,
     serverClientId: String,
 ) {
 
@@ -71,15 +72,24 @@ fun AuthScreen(
             when (it) {
                 AuthEvent.NavigateHome -> onNavigateToHomeScreen()
                 AuthEvent.ShowSignUpDialog -> showDialog = true
+                AuthEvent.NavigateSignupEmailVerification -> onNavigateToSignUpEmailVerification(
+                    uiState.email
+                )
             }
         }
     }
 
     if (showDialog) {
-        WantsToSignUpDialog(
+        AccountNotFoundDialog(
+            email = uiState.email,
             onConfirm = {
                 showDialog = false
-                //SignUp Process
+                viewModel.onIntent(
+                    AuthUiIntent.EmailSignup(
+                        email = uiState.email,
+                        password = uiState.password
+                    )
+                )
             },
             onCancel = { showDialog = false }
         )

@@ -2,9 +2,9 @@ package auth.datasource.remote
 
 import auth.model.AuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GithubAuthProvider
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.OAuthProvider
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -13,7 +13,16 @@ class AuthRemoteDatasourceImpl @Inject constructor(
 ) : AuthRemoteDatasource {
 
     override suspend fun isAuthorized(): Boolean {
-        return firebaseAuth.currentUser != null
+        val user = firebaseAuth.currentUser ?: return false
+        return try {
+            user.reload().await()
+            true
+        } catch (_: FirebaseAuthInvalidUserException) {
+            firebaseAuth.signOut()
+            false
+        } catch (_: Exception) {
+            true
+        }
     }
 
     override suspend fun login(provider: AuthProvider) {
@@ -35,6 +44,15 @@ class AuthRemoteDatasourceImpl @Inject constructor(
                 firebaseAuth.signInWithCredential(credential).await()
             }
         }
+    }
+
+    override suspend fun signup(provider: AuthProvider.EmailPassword) {
+        val result = firebaseAuth.createUserWithEmailAndPassword(
+            provider.email,
+            provider.password,
+        ).await()
+
+        result.user?.sendEmailVerification()?.await()
     }
 
     override suspend fun refreshTokens() {

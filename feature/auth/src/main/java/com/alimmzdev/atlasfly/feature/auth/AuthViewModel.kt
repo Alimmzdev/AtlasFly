@@ -12,6 +12,7 @@ import auth.usecase.IsAuthorizedUseCase
 import auth.usecase.LoginUseCase
 import auth.usecase.LogoutUseCase
 import auth.usecase.RefreshTokensUseCase
+import auth.usecase.SignupUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -26,6 +27,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
+    private val signupUseCase: SignupUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val isAuthorizedUseCase: IsAuthorizedUseCase,
     private val refreshTokensUseCase: RefreshTokensUseCase,
@@ -46,13 +48,15 @@ class AuthViewModel @Inject constructor(
     fun onIntent(intent: AuthUiIntent) {
         when (intent) {
             is AuthUiIntent.EmailLogin ->
-                login(EmailPassword(intent.email, intent.password))
+                login(provider = EmailPassword(intent.email, intent.password))
+
+            is AuthUiIntent.EmailSignup -> signup(provider = EmailPassword(intent.email, intent.password))
 
             is AuthUiIntent.GoogleLogin ->
-                login(Google(intent.idToken))
+                login(provider = Google(intent.idToken))
 
             is AuthUiIntent.GithubLogin ->
-                login(Github(intent.accessToken))
+                login(provider = Github(intent.accessToken))
 
             is AuthUiIntent.RefreshTokens ->
                 refreshTokens()
@@ -112,12 +116,55 @@ class AuthViewModel @Inject constructor(
                                 },
                             )
                         }
-                        if (result.error is AuthError.UserNotFound) {
+                        if (result.error is AuthError.InvalidCredentials) {
                             _events.send(AuthEvent.ShowSignUpDialog)
                         }
                     }
                 }
             }
+        }
+    }
+
+    private fun signup(provider: EmailPassword){
+        viewModelScope.launch {
+            signupUseCase.invoke(provider = provider)
+                .collect { result ->
+                    when (result) {
+                        is AuthResult.Loading -> _uiState.update {
+                            it.copy(
+                                isLoading = true,
+                                loadingProvider = provider,
+                                error = null,
+                            )
+                        }
+
+                        is AuthResult.Success -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    loadingProvider = null,
+                                    isLoggedIn = true,
+                                )
+                            }
+                            _events.send(AuthEvent.NavigateSignupEmailVerification)
+                        }
+
+                        is AuthResult.Failure -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    loadingProvider = null,
+                                    error = result.error.takeIf { e ->
+                                        e !is AuthError.Cancelled && e !is AuthError.UserNotFound
+                                    },
+                                )
+                            }
+                            if (result.error is AuthError.InvalidCredentials) {
+                                _events.send(AuthEvent.ShowSignUpDialog)
+                            }
+                        }
+                    }
+                }
         }
     }
 

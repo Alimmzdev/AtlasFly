@@ -33,6 +33,14 @@ class AuthRepositoryImpl @Inject constructor(
         .catch { e -> emit(e.toAuthResultFailure()) }
         .flowOn(Dispatchers.IO)
 
+    override fun signup(provider: AuthProvider.EmailPassword): Flow<AuthResult> = flow {
+        emit(AuthResult.Loading)
+        authRemoteDatasource.signup(provider = provider)
+        emit(AuthResult.Success)
+    }
+        .catch { e -> emit(e.toAuthResultFailure()) }
+        .flowOn(Dispatchers.IO)
+
     override fun refreshTokens(): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
         authRemoteDatasource.refreshTokens()
