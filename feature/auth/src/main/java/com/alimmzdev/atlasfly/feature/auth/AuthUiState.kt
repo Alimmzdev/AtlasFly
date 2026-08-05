@@ -13,7 +13,19 @@ data class AuthUiState(
     val isCheckingAuth: Boolean = false,
     val loadingProvider: AuthProvider? = null,
     val error: AuthError? = null,
-)
+) {
+    val signInButtonIsEnable
+        get() = !isLoading && email.isNotBlank() && password.isNotBlank()
+
+    val isEmailPasswordLoading
+        get() = isLoading && loadingProvider is AuthProvider.EmailPassword
+
+    val isGoogleLoading
+        get() = isLoading && loadingProvider is AuthProvider.Google
+
+    val isGithubLoading
+        get() = isLoading && loadingProvider is AuthProvider.Github
+}
 
 fun AuthError.toUserMessage(): String = when (this) {
     AuthError.InvalidCredentials -> "Incorrect email or password"

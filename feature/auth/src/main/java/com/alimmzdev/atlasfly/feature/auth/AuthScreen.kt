@@ -4,67 +4,48 @@ import android.app.Activity
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import auth.model.AuthProvider
-import com.alimmzdev.atlasfly.feature.auth.login.launchGoogleLogin
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.OAuthProvider
+import com.alimmzdev.atlasfly.feature.auth.components.AuthHeader
+import com.alimmzdev.atlasfly.feature.auth.components.EmailField
+import com.alimmzdev.atlasfly.feature.auth.components.GithubLoginButton
+import com.alimmzdev.atlasfly.feature.auth.components.GoogleLoginButton
+import com.alimmzdev.atlasfly.feature.auth.components.PasswordField
+import com.alimmzdev.atlasfly.feature.auth.components.SignInButton
+import com.alimmzdev.atlasfly.feature.auth.components.WantsToSignUpDialog
+import com.alimmzdev.atlasfly.feature.auth.helpers.launchGitHubLogin
+import com.alimmzdev.atlasfly.feature.auth.helpers.launchGoogleLogin
 import kotlinx.coroutines.launch
-import tech.nullexdev.atlasfly.feature.auth.presentation.R
 
 @Composable
 fun AuthScreen(
@@ -75,17 +56,46 @@ fun AuthScreen(
             "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
         }, null
     ),
+    onNavigateToHomeScreen: () -> Unit,
     serverClientId: String,
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
     val activity = LocalContext.current as Activity
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collect {
+            when (it) {
+                AuthEvent.NavigateHome -> onNavigateToHomeScreen()
+                AuthEvent.ShowSignUpDialog -> showDialog = true
+            }
+        }
+    }
+
+    if (showDialog) {
+        WantsToSignUpDialog(
+            onConfirm = {
+                showDialog = false
+                //SignUp Process
+            },
+            onCancel = { showDialog = false }
+        )
+    }
 
     AuthScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
+        onEmailPasswordLogin = {
+            viewModel.onIntent(
+                AuthUiIntent.EmailLogin(
+                    email = uiState.email,
+                    password = uiState.password
+                )
+            )
+        },
         onGoogleLogin = {
             scope.launch {
                 launchGoogleLogin(
@@ -100,39 +110,41 @@ fun AuthScreen(
                         if (e is NoCredentialException) {
                             openAddGoogleAccountScreen(activity = activity)
                         } else {
-                            // generic error UI
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Failed to sign in with Google. Please try again."
+                                )
+                            }
                         }
                     }
                 )
             }
         },
         onGithubLogin = {
-            val provider = OAuthProvider.newBuilder("github.com")
-            // Optional: request extra GitHub scopes, e.g. "read:user"
-            provider.scopes = listOf("read:user")
-
-            val auth = FirebaseAuth.getInstance()
-            val pending = auth.pendingAuthResult
-
-            if (pending != null) {
-                // There's already a pending sign-in, continue it
-                pending
-                    .addOnSuccessListener { result ->
-                        // result.user is now signed in
+            launchGitHubLogin(
+                activity = activity,
+                onSuccess = { user, githubToken ->
+                    if (githubToken != null) {
+                        viewModel.onIntent(
+                            AuthUiIntent.GithubLogin(user = user, accessToken = githubToken)
+                        )
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = "Failed to get GitHub access token. Please try again."
+                            )
+                        }
                     }
-                    .addOnFailureListener { e ->
-                        // handle failure, e.g. update uiState.errorMessage
+                },
+                onFailure = { e ->
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "${e.localizedMessage}"
+                        )
                     }
-            } else {
-                auth.startActivityForSignInWithProvider(activity, provider.build())
-                    .addOnSuccessListener { result ->
-                        // result.user is now signed in
-                    }
-                    .addOnFailureListener { e ->
-                        // handle failure
-                    }
-            }
-        }
+                }
+            )
+        },
     )
 }
 
@@ -147,12 +159,13 @@ private fun openAddGoogleAccountScreen(activity: Activity) {
 @Composable
 private fun AuthScreenContent(
     uiState: AuthUiState,
+    onEmailPasswordLogin: () -> Unit,
     onIntent: (AuthUiIntent) -> Unit,
     onGoogleLogin: () -> Unit,
     onGithubLogin: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
-    var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
+
 
     Column(
         modifier = Modifier
@@ -162,67 +175,33 @@ private fun AuthScreenContent(
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text(
-            "Welcome back",
-            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-        )
-        Text(
-            "Sign in to continue planning your trips",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        AuthHeader()
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // --- Email field ---
-        OutlinedTextField(
+        EmailField(
             value = uiState.email,
-            onValueChange = { onIntent(AuthUiIntent.EmailChanged(it)) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Email") },
-            singleLine = true,
-            isError = uiState.emailError != null,
-            supportingText = uiState.emailError?.let { { Text(it) } },
             enabled = !uiState.isLoading,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next
-            ),
-            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+            error = uiState.emailError,
+            onValueChange = { onIntent(AuthUiIntent.EmailChanged(it)) },
+            onNext = { focusManager.moveFocus(FocusDirection.Down) }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- Password field ---
-        OutlinedTextField(
+        PasswordField(
             value = uiState.password,
-            onValueChange = { onIntent(AuthUiIntent.PasswordChanged(it)) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Password") },
-            singleLine = true,
-            isError = uiState.passwordError != null,
-            supportingText = uiState.passwordError?.let { { Text(it) } },
+            error = uiState.passwordError,
             enabled = !uiState.isLoading,
-            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                    Icon(
-                        imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = if (isPasswordVisible) "Hide password" else "Show password"
-                    )
-                }
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(onDone = {
+            onValueChange = { onIntent(AuthUiIntent.PasswordChanged(it)) },
+            onDone = {
                 focusManager.clearFocus()
-                onIntent(AuthUiIntent.EmailLogin(email = uiState.email, password = uiState.password))
-            })
+                onEmailPasswordLogin()
+            }
         )
 
-        // Forgot password — right-aligned, close to the field it relates to
+
+
         TextButton(
             onClick = { onIntent(AuthUiIntent.ForgotPasswordClicked) },
             modifier = Modifier.align(Alignment.End),
@@ -242,21 +221,11 @@ private fun AuthScreenContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            onClick = { onIntent(AuthUiIntent.EmailLogin(email = uiState.email, password = uiState.password)) },
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            enabled = !uiState.isLoading && uiState.email.isNotBlank() && uiState.password.isNotBlank(),
-        ) {
-            if (uiState.isLoading && uiState.loadingProvider is AuthProvider.EmailPassword) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
-                    color = LocalContentColor.current
-                )
-            } else {
-                Text("Sign In")
-            }
-        }
+        SignInButton(
+            isEnable = uiState.signInButtonIsEnable,
+            isLoading = uiState.isEmailPasswordLoading,
+            onClick = onEmailPasswordLogin,
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -272,69 +241,17 @@ private fun AuthScreenContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        OutlinedButton(
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
-            onClick = onGoogleLogin,
-            enabled = !uiState.isLoading,
-        ) {
-            if (uiState.isLoading && uiState.loadingProvider is AuthProvider.Google) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-            } else {
-                Image(
-                    painter = painterResource(R.drawable.google_icon_logo),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Continue with Google")
-            }
-        }
+        GoogleLoginButton(
+            isLoading = uiState.isGoogleLoading,
+            onClick = onGoogleLogin
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White),
-            onClick = onGithubLogin,
-            enabled = !uiState.isLoading,
-        ) {
-            if (uiState.isLoading && uiState.loadingProvider is AuthProvider.Github) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Color.White)
-            } else {
-                Image(
-                    painter = painterResource(R.drawable.github_invertocat_white),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Continue with GitHub")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // --- Sign up link ---
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                "Don't have an account? ",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                "Sign up",
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable(enabled = !uiState.isLoading) {
-                    onIntent(AuthUiIntent.NavigateToSignUp)
-                }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        GithubLoginButton(
+            isLoading = uiState.isGithubLoading,
+            onClick = onGithubLogin
+        )
     }
 }
 
@@ -344,6 +261,19 @@ fun AuthScreenContentPreview() {
     AuthScreenContent(
         uiState = AuthUiState(),
         onIntent = {},
+        onEmailPasswordLogin = {},
+        onGoogleLogin = {},
+        onGithubLogin = {},
+    )
+}
+
+@Preview
+@Composable
+fun AuthScreenContentWantsToSignUpPreview() {
+    AuthScreenContent(
+        uiState = AuthUiState(),
+        onIntent = {},
+        onEmailPasswordLogin = {},
         onGoogleLogin = {},
         onGithubLogin = {},
     )

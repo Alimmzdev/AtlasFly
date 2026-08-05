@@ -1,4 +1,4 @@
-package com.alimmzdev.atlasfly.feature.auth.login
+package com.alimmzdev.atlasfly.feature.auth.helpers
 
 import android.app.Activity
 import androidx.credentials.CredentialManager

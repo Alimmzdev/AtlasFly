@@ -2,27 +2,28 @@ package tech.nullexdev.atlasfly.core.navigation
 
 import kotlinx.serialization.Serializable
 
-object Routes {
+@Serializable
+sealed interface Routes {
 
     @Serializable
-    data object Home
+    data object Home : Routes
 
     @Serializable
-    data object Flights
+    data object Flights : Routes
 
     @Serializable
-    data object Profile
+    data object Profile : Routes
 
-
-    object Auth {
-
-        @Serializable
-        data object Login
+    @Serializable
+    sealed interface Auth : Routes {
 
         @Serializable
-        data object SignUp
+        data object Login : Auth
 
         @Serializable
-        data object ForgotPassword
+        data object SignUp : Auth
+
+        @Serializable
+        data object ForgotPassword : Auth
     }
 }
