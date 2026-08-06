@@ -1,6 +1,7 @@
 package auth.datasource.remote
 
 import auth.model.AuthProvider
+import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.GithubAuthProvider
@@ -47,12 +48,25 @@ class AuthRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun signup(provider: AuthProvider.EmailPassword) {
-        val result = firebaseAuth.createUserWithEmailAndPassword(
-            provider.email,
-            provider.password,
-        ).await()
 
-        result.user?.sendEmailVerification()?.await()
+        val result = firebaseAuth
+            .createUserWithEmailAndPassword(
+                provider.email,
+                provider.password
+            )
+            .await()
+
+
+        val actionCodeSettings = ActionCodeSettings.newBuilder()
+            .setUrl(
+                "https://atlasfly.nullexdev.tech/atlasfly-email-verified.html"
+            )
+            .setHandleCodeInApp(false)
+            .build()
+
+        result.user?.sendEmailVerification(
+            actionCodeSettings
+        )?.await()
     }
 
     override suspend fun refreshTokens() {
