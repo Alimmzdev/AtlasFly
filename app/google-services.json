@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "13596046248",
+    "project_id": "atlasfly-b6d8d",
+    "storage_bucket": "atlasfly-b6d8d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:13596046248:android:8faa57325d722de02c639d",
+        "android_client_info": {
+          "package_name": "tech.nullexdev.atlasfly"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "13596046248-rl2s9ran6h65fng3df9r7vdc8t5dmset.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBx0wQ7rTenHF_55uuSsEHcvUUU6BgOgOc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "13596046248-rl2s9ran6h65fng3df9r7vdc8t5dmset.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
