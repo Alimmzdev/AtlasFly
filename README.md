@@ -1,187 +1,254 @@
 # AtlasFly
 
-An Android flight and travel companion app built with Kotlin and Jetpack Compose.
+**A production-oriented Android flight & travel companion — built to demonstrate modern Kotlin, Compose, and clean architecture.**
 
-**Package:** `tech.nullexdev.atlasfly`
-**License:** MIT
-**Author:** ALI Mohammadzadeh
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=android&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20Multi--module-2EA043)](https://developer.android.com/topic/architecture)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Tech Stack
+> Portfolio project by **ALI Mohammadzadeh** — Android developer focused on scalable architecture, polished UX, and maintainable Kotlin codebases.  
+> Open to opportunities across **Europe (EU/EEA)** · Remote or relocation.
+
+---
+
+## Why this project exists
+
+AtlasFly is not a tutorial clone. It is a **deliberately structured Android application** that mirrors how I build software in professional teams:
+
+- **Modular boundaries** that scale with team size and feature velocity
+- **Unidirectional data flow** (MVI-style) for predictable UI state
+- **Security-first auth** with encrypted local storage and OAuth providers
+- **Modern Android stack** aligned with what EU product companies expect in 2026
+
+If you are a recruiter, hiring manager, or fellow Android developer, this repository is meant to answer one question quickly: *Can this engineer design, implement, and document a real Android product?*
+
+---
+
+## Demo
+
+### Video walkthrough
+
+<!-- Replace the link below with your hosted demo (YouTube, Loom, Google Drive, etc.) -->
+[![AtlasFly demo video](docs/screenshots/00-demo-video-thumbnail.png)](docs/videos/atlasfly-demo.mp4)
+
+> **Placeholder:** Add your screen recording to [`docs/videos/atlasfly-demo.mp4`](docs/videos/)  
+> Recommended: 60–90 seconds covering splash → auth → email verification → home navigation.
+
+**Suggested hosting options:** YouTube (unlisted), Loom, or GitHub release assets.
+
+---
+
+## Screenshots
+
+| Splash & branding | Authentication | Email verification |
+|:---:|:---:|:---:|
+| ![Splash screen placeholder](docs/screenshots/01-splash.png) | ![Auth screen placeholder](docs/screenshots/02-auth-login.png) | ![Email verification placeholder](docs/screenshots/03-email-verification.png) |
+| *Splash screen* | *Login / Sign up* | *Verify email flow* |
+
+| Social sign-in | Deep link handling | Home (WIP) |
+|:---:|:---:|:---:|
+| ![Social login placeholder](docs/screenshots/04-social-login.png) | ![Deep link placeholder](docs/screenshots/05-deep-link-verification.png) | ![Home placeholder](docs/screenshots/06-home.png) |
+| *Google & GitHub OAuth* | *Email link opens app* | *Main destination* |
+
+> **Placeholder:** Drop PNG/WebP files into [`docs/screenshots/`](docs/screenshots/).  
+> See [`docs/media/README.md`](docs/media/README.md) for naming conventions and capture tips.
+
+---
+
+## Highlights for reviewers
+
+| Area | What to look at |
+|---|---|
+| **Architecture** | Multi-module Clean Architecture: `app` → `feature` → `service` → `core` |
+| **UI pattern** | Compose + MVI (`UiState` / `UiIntent` / `Event`) in ViewModels |
+| **Auth** | Email/password, Google, GitHub via Firebase Auth |
+| **Security** | Auth tokens encrypted with Google Tink + DataStore |
+| **Navigation** | Type-safe routes with Navigation 3 |
+| **Deep links** | Email verification handled in `MainActivity` → `AtlasFlyViewModel` |
+| **DI** | Hilt modules across network, local, and auth layers |
+| **Build hygiene** | Gradle Version Catalog, KSP, Kotlin DSL |
+
+---
+
+## Features
+
+### Implemented
+
+- [x] Multi-module project scaffold (`app`, `core`, `feature`, `service`)
+- [x] Jetpack Compose UI with Material 3
+- [x] Splash screen & app shell with auth gate
+- [x] Email/password sign-up and sign-in
+- [x] Google Sign-In (Credential Manager)
+- [x] GitHub OAuth login
+- [x] Sign-up email verification screen with resend
+- [x] Deep link parsing for email verification (`oobCode` + verified landing)
+- [x] Encrypted auth token persistence (Tink + DataStore)
+- [x] Ktor HTTP client with debug network inspection (Chucker)
+- [x] Hilt dependency injection across layers
+- [x] Use-case driven domain layer (`LoginUseCase`, `VerifyEmailUseCase`, …)
+
+### Roadmap
+
+- [ ] Flight search & results
+- [ ] Travel itinerary planning
+- [ ] User profile & settings
+- [ ] Offline caching strategy
+- [ ] Unit & UI test coverage expansion
+- [ ] CI pipeline (build, lint, test)
+
+---
+
+## Architecture
+
+AtlasFly follows **Clean Architecture** with strict module boundaries and a **feature-first** organization.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         :app                               │
+│   Compose UI · Navigation · Deep links · Hilt entry point  │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         ▼                 ▼                 ▼
+   ┌───────────┐    ┌────────────┐    ┌─────────────┐
+   │ :feature  │    │  :service  │    │    :core    │
+   │ auth      │    │  domain    │    │  network    │
+   │ home      │    │  data      │    │  local      │
+   │ search …  │    │ (Firebase) │    │  navigation │
+   └───────────┘    └────────────┘    └─────────────┘
+```
+
+### Data flow (MVI-style)
+
+```
+User action → UiIntent → ViewModel → UseCase → Repository → DataSource
+                ↑                                              │
+                └──────── StateFlow<UiState> ←─────────────────┘
+```
+
+### Module map
+
+```
+AtlasFly/
+├── app/                    # Application entry, theme, navigation shell
+├── core/
+│   ├── design-system/      # Shared UI tokens & components
+│   ├── presentation/       # Base presentation utilities
+│   ├── navigation/         # Type-safe Routes (kotlinx.serialization)
+│   ├── network/            # Ktor client, Hilt NetworkModule, Chucker
+│   └── local/              # Encrypted DataStore, Tink CryptoManager
+├── feature/
+│   ├── auth/               # Login, signup, email verification UI
+│   ├── home/               # Home dashboard (scaffold)
+│   ├── search/             # Flight search (scaffold)
+│   ├── travel/             # Travel planning (scaffold)
+│   ├── flight/             # Flight details (scaffold)
+│   └── profile/            # User profile (scaffold)
+├── service/
+│   ├── domain/             # Auth use cases, models, repository contracts
+│   └── data/               # Firebase Auth, local/remote data sources
+└── gradle/libs.versions.toml
+```
+
+---
+
+## Tech stack
 
 | Category | Technology |
 |---|---|
 | Language | Kotlin 2.4.10 |
 | UI | Jetpack Compose, Material 3 |
-| Build | AGP 9.2.1, Gradle 9.5.0, Kotlin DSL, Version Catalog |
+| Architecture | Clean Architecture, MVI-style UDF, multi-module |
 | DI | Hilt 2.60.1, KSP 2.3.10 |
-| Networking | Ktor 3.5.1 (OkHttp engine), kotlinx-serialization |
-| Image loading | Coil 3.5.0 (Ktor network fetcher) |
-| Local storage | DataStore 1.2.1, Google Tink 1.23.0 (encrypted auth tokens) |
-| Debug tooling | Chucker 4.3.1 (network inspector) |
-| Min SDK | 24 (Android 7.0) |
-| Target / Compile SDK | 37 |
+| Navigation | Navigation 3 (type-safe routes) |
+| Auth | Firebase Auth, Credential Manager, Google & GitHub OAuth |
+| Networking | Ktor 3.5.x (OkHttp engine), kotlinx-serialization |
+| Image loading | Coil 3.5.x |
+| Local storage | DataStore 1.2.1, Google Tink 1.23.0 |
+| Debug tooling | Chucker 4.3.1 |
+| Build | AGP 9.2.1, Gradle 9.5.0, Version Catalog |
+| Min / Target SDK | 24 / 37 |
 
-## Architecture
+Dependency versions are centralized in [`gradle/libs.versions.toml`](gradle/libs.versions.toml).
 
-AtlasFly uses a **multi-module architecture** organized into four layers: `app`, `core`, `feature`, and `service`.
+---
 
-```
-AtlasFly/
-├── app/                          # Application entry point (Compose, Hilt, Coil)
-├── core/                         # Shared infrastructure
-│   ├── design-system/            # Reusable UI components & theme (JVM scaffold)
-│   ├── presentation/             # Base UI utilities & common composables (JVM scaffold)
-│   ├── data/                     # Data layer abstractions (JVM scaffold)
-│   ├── domain/                   # Domain layer — use cases, models (JVM scaffold)
-│   ├── network/                  # Ktor HTTP client, Hilt DI, Chucker (Android)
-│   └── local/                    # Encrypted DataStore, Tink crypto (Android)
-├── feature/                      # Feature modules (self-contained UI)
-│   ├── auth/                     # Authentication flow (JVM scaffold)
-│   ├── home/
-│   ├── search/
-│   ├── travel/
-│   ├── flight/
-│   └── profile/
-├── service/                      # Backend / service integrations
-│   ├── data/                     # Service-layer data implementations (JVM scaffold)
-│   └── domain/                   # Service-layer domain logic (JVM scaffold)
-├── gradle/
-│   └── libs.versions.toml        # Centralized version catalog
-└── build.gradle.kts
-```
+## Skills demonstrated
 
-### Module Responsibilities
+These map directly to common **EU Android job requirements**:
 
-| Module | Type | Purpose |
-|---|---|---|
-| `:app` | Android application | App config, Compose theme, splash screen, Hilt entry point, Coil setup |
-| `:core:design-system` | JVM library | Design tokens, colors, typography, reusable components |
-| `:core:presentation` | JVM library | Base ViewModel, common UI patterns, extensions |
-| `:core:data` | JVM library | Repository implementations, data source coordination |
-| `:core:domain` | JVM library | Use cases, domain models, repository interfaces |
-| `:core:network` | Android library | Ktor HTTP client (OkHttp engine), JSON serialization, Hilt `NetworkModule`, Chucker |
-| `:core:local` | Android library | Encrypted DataStore for auth tokens, Tink `CryptoManager`, Hilt `LocalModule` |
-| `:service:data` | JVM library | Service-layer data implementations |
-| `:service:domain` | JVM library | Service-layer domain models and business logic |
-| `:feature:auth` | JVM library | Login, registration, and session management |
-| `:feature:home` | JVM library | Home / dashboard screen |
-| `:feature:search` | JVM library | Flight search functionality |
-| `:feature:travel` | JVM library | Travel planning & itinerary |
-| `:feature:flight` | JVM library | Flight details & booking |
-| `:feature:profile` | JVM library | User profile & settings |
-
-> **Note:** Most feature and core modules are currently JVM library scaffolds. `:app`, `:core:network`, and `:core:local` contain active Android implementations.
-
-## Dependencies
-
-All dependency versions are managed in [`gradle/libs.versions.toml`](gradle/libs.versions.toml).
-
-### Build & Language
-
-| Library | Version |
+| Skill | Evidence in this repo |
 |---|---|
-| Android Gradle Plugin | 9.2.1 |
-| Kotlin | 2.4.10 |
-| Gradle | 9.5.0 |
-| KSP | 2.3.10 |
+| **Kotlin** | Coroutines, Flow, sealed interfaces, extension functions |
+| **Jetpack Compose** | Declarative UI, state hoisting, lifecycle-aware collection |
+| **Clean Architecture** | Domain use cases, repository pattern, module separation |
+| **Dependency Injection** | Hilt modules for network, local storage, auth |
+| **Security awareness** | Encrypted token storage, OAuth, deep link validation |
+| **Modern Gradle** | Version catalog, Kotlin DSL, multi-module builds |
+| **Product thinking** | Auth gate, verification UX, error messaging, loading states |
 
-### AndroidX & Compose
+---
 
-| Library | Version |
-|---|---|
-| Core KTX | 1.19.0 |
-| Core Splashscreen | 1.2.0 |
-| Lifecycle Runtime KTX | 2.11.0 |
-| Activity Compose | 1.13.0 |
-| Compose BOM | 2026.06.01 |
-| Annotation Experimental | 1.4.1 |
-
-### Dependency Injection
-
-| Library | Version |
-|---|---|
-| Hilt | 2.60.1 |
-
-### Networking
-
-| Library | Version |
-|---|---|
-| Ktor Client | 3.5.1 |
-| kotlinx-serialization-json | 1.11.0 |
-| Chucker (debug) | 4.3.1 |
-
-### Image Loading
-
-| Library | Version |
-|---|---|
-| Coil 3 | 3.5.0 |
-
-### Local Storage
-
-| Library | Version |
-|---|---|
-| DataStore | 1.2.1 |
-| Google Tink (Android) | 1.23.0 |
-| Protobuf JavaLite | 4.35.1 |
-
-### Navigation (catalog — not yet wired)
-
-| Library | Version |
-|---|---|
-| Navigation 3 Runtime | 1.1.4 |
-| Navigation 3 UI | 1.1.4 |
-
-### Testing
-
-| Library | Version |
-|---|---|
-| JUnit | 4.13.2 |
-| AndroidX JUnit | 1.3.0 |
-| Espresso Core | 3.7.0 |
-
-### Module Dependency Graph
-
-```
-:app
- ├── :core:network          (Ktor, Hilt, Chucker)
- ├── Hilt, Coil, Compose
- └── (feature modules — to be wired)
-
-:core:local
- ├── DataStore, Tink, kotlinx-serialization
- └── Hilt
-
-:core:network
- ├── Ktor (core, okhttp, content-negotiation, logging, serialization)
- └── Hilt
-```
-
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Android Studio Quail (2026.1) or later
-- JDK 11+ (JDK 17 required for `:core:local`)
+- Android Studio Ladybug (2024.2) or newer
+- JDK 17+
+- Android SDK 37
 
-### Build & Run
+### Firebase setup (required for auth)
+
+1. Create a Firebase project and add an Android app with package `tech.nullexdev.atlasfly`
+2. Download `google-services.json` into `app/`
+3. Enable **Email/Password**, **Google**, and **GitHub** sign-in in Firebase Console
+4. Configure OAuth redirect URIs for GitHub if using GitHub login
+
+> The repo includes a placeholder `google-services.json`. Replace it with your own for local development.
+
+### Build & run
 
 ```bash
 ./gradlew assembleDebug
-```
-
-Install on a connected device or emulator:
-
-```bash
 ./gradlew installDebug
 ```
 
-## Project Structure Conventions
+### Run tests
+
+```bash
+./gradlew test
+./gradlew connectedAndroidTest
+```
+
+---
+
+## Project conventions
 
 - **Package scheme:** `tech.nullexdev.atlasfly.{layer}.{module}`
-- **Each feature module** is self-contained — it declares its own navigation, screen composables, and ViewModels
-- **Core modules** provide shared logic consumed by feature and service modules
-- **Service modules** handle external API / backend integration independently
-- **Version catalog:** add or bump dependencies in `gradle/libs.versions.toml`, then reference them via `libs.*` aliases in module `build.gradle.kts` files
+- **Feature modules** own their screens, ViewModels, and UI components
+- **Service modules** encapsulate backend integration (Firebase Auth today)
+- **Core modules** provide shared infrastructure consumed by features
+- **Use cases** expose single-responsibility domain operations
+- **Version catalog:** bump dependencies in `gradle/libs.versions.toml`, reference via `libs.*`
+
+---
+
+## About the author
+
+**ALI Mohammadzadeh** — Android Developer
+
+Building AtlasFly to showcase how I approach real-world Android development: modular architecture, thoughtful UX, and code that teams can maintain and extend.
+
+| | |
+|---|---|
+| **GitHub** | [Alimmzdev](https://github.com/Alimmzdev) |
+| **Location** | Open to EU opportunities (remote / relocation) |
+| **Focus** | Kotlin · Jetpack Compose · Clean Architecture · Product-quality UX |
+
+> **Recruiters:** A video walkthrough and screenshots significantly improve first impressions — see [`docs/media/README.md`](docs/media/README.md) for the asset checklist.
+
+---
 
 ## License
 
@@ -190,3 +257,5 @@ MIT License
 
 Copyright (c) 2026 ALI Mohammadzadeh
 ```
+
+See [LICENSE](LICENSE) for full text.
