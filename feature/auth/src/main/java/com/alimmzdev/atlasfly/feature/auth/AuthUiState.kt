@@ -31,8 +31,10 @@ fun AuthError.toUserMessage(): String = when (this) {
     AuthError.InvalidCredentials -> "Incorrect email or password"
     AuthError.UserNotFound -> "No account found with this email"
     AuthError.AccountExistsDifferentProvider -> "This email is linked to a different sign-in method"
+    AuthError.InvalidActionCode -> "This verification link is invalid or has expired"
+    AuthError.EmailNotVerified -> "Please verify your email before continuing"
     AuthError.NetworkError -> "Check your connection and try again"
     AuthError.TooManyAttempts -> "Too many attempts. Try again later"
-    AuthError.Cancelled -> "" // user-initiated cancel, don't show an error at all
+    AuthError.Cancelled -> ""
     is AuthError.Unknown -> "Something went wrong. Please try again"
 }

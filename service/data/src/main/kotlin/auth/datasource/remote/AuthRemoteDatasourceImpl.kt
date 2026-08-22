@@ -17,12 +17,12 @@ class AuthRemoteDatasourceImpl @Inject constructor(
         val user = firebaseAuth.currentUser ?: return false
         return try {
             user.reload().await()
-            true
+            user.isEmailVerified
         } catch (_: FirebaseAuthInvalidUserException) {
             firebaseAuth.signOut()
             false
         } catch (_: Exception) {
-            true
+            user.isEmailVerified
         }
     }
 
@@ -48,25 +48,45 @@ class AuthRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun signup(provider: AuthProvider.EmailPassword) {
-
         val result = firebaseAuth
             .createUserWithEmailAndPassword(
                 provider.email,
                 provider.password
             )
             .await()
-
-
-        val actionCodeSettings = ActionCodeSettings.newBuilder()
-            .setUrl(
-                "https://atlasfly.nullexdev.tech/atlasfly-email-verified.html"
-            )
-            .setHandleCodeInApp(false)
-            .build()
-
         result.user?.sendEmailVerification(
-            actionCodeSettings
+            buildEmailVerificationActionCodeSettings()
         )?.await()
+    }
+
+    override suspend fun verifyEmail(oobCode: String) {
+        firebaseAuth.applyActionCode(oobCode).await()
+        val user = firebaseAuth.currentUser
+            ?: throw IllegalStateException("No signed-in Firebase user")
+        user.reload().await()
+        if (!user.isEmailVerified) {
+            throw IllegalStateException("Email verification failed")
+        }
+    }
+
+    override suspend fun isEmailVerified(): Boolean {
+        val user = firebaseAuth.currentUser ?: return false
+        user.reload().await()
+        return user.isEmailVerified
+    }
+
+    override suspend fun resendEmailVerification() {
+        val user = firebaseAuth.currentUser
+            ?: throw IllegalStateException("No signed-in Firebase user")
+        user.sendEmailVerification(buildEmailVerificationActionCodeSettings()).await()
+    }
+
+    private fun buildEmailVerificationActionCodeSettings(): ActionCodeSettings {
+        return ActionCodeSettings.newBuilder()
+            .setUrl(EMAIL_VERIFICATION_CONTINUE_URL)
+            .setHandleCodeInApp(true)
+            .setAndroidPackageName(ANDROID_PACKAGE_NAME, false, null)
+            .build()
     }
 
     override suspend fun refreshTokens() {
@@ -77,5 +97,11 @@ class AuthRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun logout() {
         firebaseAuth.signOut()
+    }
+
+    private companion object {
+        const val EMAIL_VERIFICATION_CONTINUE_URL: String =
+            "https://atlasfly.nullexdev.tech/atlasfly-email-verified"
+        const val ANDROID_PACKAGE_NAME: String = "tech.nullexdev.atlasfly"
     }
 }

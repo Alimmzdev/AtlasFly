@@ -5,6 +5,7 @@ import auth.model.AuthError
 import auth.model.AuthProvider
 import auth.model.AuthResult
 import com.google.firebase.FirebaseTooManyRequestsException
+import com.google.firebase.auth.FirebaseAuthActionCodeException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -41,6 +42,26 @@ class AuthRepositoryImpl @Inject constructor(
         .catch { e -> emit(e.toAuthResultFailure()) }
         .flowOn(Dispatchers.IO)
 
+    override fun verifyEmail(oobCode: String): Flow<AuthResult> = flow {
+        emit(AuthResult.Loading)
+        authRemoteDatasource.verifyEmail(oobCode)
+        emit(AuthResult.Success)
+    }
+        .catch { e -> emit(e.toAuthResultFailure()) }
+        .flowOn(Dispatchers.IO)
+
+    override suspend fun isEmailVerified(): Boolean {
+        return authRemoteDatasource.isEmailVerified()
+    }
+
+    override fun resendEmailVerification(): Flow<AuthResult> = flow {
+        emit(AuthResult.Loading)
+        authRemoteDatasource.resendEmailVerification()
+        emit(AuthResult.Success)
+    }
+        .catch { e -> emit(e.toAuthResultFailure()) }
+        .flowOn(Dispatchers.IO)
+
     override fun refreshTokens(): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
         authRemoteDatasource.refreshTokens()
@@ -58,6 +79,7 @@ private fun Throwable.toAuthResultFailure(): AuthResult.Failure = when (this) {
     is FirebaseAuthInvalidCredentialsException -> AuthResult.Failure(AuthError.InvalidCredentials)
     is FirebaseAuthInvalidUserException -> AuthResult.Failure(AuthError.UserNotFound)
     is FirebaseAuthUserCollisionException -> AuthResult.Failure(AuthError.AccountExistsDifferentProvider)
+    is FirebaseAuthActionCodeException -> AuthResult.Failure(AuthError.InvalidActionCode)
     is FirebaseTooManyRequestsException -> AuthResult.Failure(AuthError.TooManyAttempts)
     is CancellationException -> AuthResult.Failure(AuthError.Cancelled)
     is IOException -> AuthResult.Failure(AuthError.NetworkError)
