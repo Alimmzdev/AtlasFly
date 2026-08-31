@@ -4,19 +4,16 @@ import android.app.Activity
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,8 +33,10 @@ import androidx.compose.ui.unit.dp
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import auth.model.AuthError
 import com.alimmzdev.atlasfly.feature.auth.components.AccountNotFoundDialog
 import com.alimmzdev.atlasfly.feature.auth.components.AuthHeader
+import com.alimmzdev.atlasfly.feature.auth.components.AuthScreenScaffold
 import com.alimmzdev.atlasfly.feature.auth.components.EmailField
 import com.alimmzdev.atlasfly.feature.auth.components.GithubLoginButton
 import com.alimmzdev.atlasfly.feature.auth.components.GoogleLoginButton
@@ -46,6 +45,7 @@ import com.alimmzdev.atlasfly.feature.auth.components.SignInButton
 import com.alimmzdev.atlasfly.feature.auth.helpers.launchGitHubLogin
 import com.alimmzdev.atlasfly.feature.auth.helpers.launchGoogleLogin
 import kotlinx.coroutines.launch
+import tech.nullexdev.atlasfly.core.designsystem.theme.AtlasFlyTheme
 
 @Composable
 fun AuthScreen(
@@ -97,6 +97,7 @@ fun AuthScreen(
 
     AuthScreenContent(
         uiState = uiState,
+        snackbarHostState = snackbarHostState,
         onIntent = viewModel::onIntent,
         onEmailPasswordLogin = {
             viewModel.onIntent(
@@ -122,7 +123,7 @@ fun AuthScreen(
                         } else {
                             scope.launch {
                                 snackbarHostState.showSnackbar(
-                                    message = "Failed to sign in with Google. Please try again."
+                                    message = "Google sign-in didn't go through. Try again?"
                                 )
                             }
                         }
@@ -141,7 +142,7 @@ fun AuthScreen(
                     } else {
                         scope.launch {
                             snackbarHostState.showSnackbar(
-                                message = "Failed to get GitHub access token. Please try again."
+                                message = "Couldn't get a GitHub token. Try once more."
                             )
                         }
                     }
@@ -149,7 +150,7 @@ fun AuthScreen(
                 onFailure = { e ->
                     scope.launch {
                         snackbarHostState.showSnackbar(
-                            message = "${e.localizedMessage}"
+                            message = e.localizedMessage ?: "GitHub sign-in failed"
                         )
                     }
                 }
@@ -169,25 +170,19 @@ private fun openAddGoogleAccountScreen(activity: Activity) {
 @Composable
 private fun AuthScreenContent(
     uiState: AuthUiState,
+    snackbarHostState: SnackbarHostState,
     onEmailPasswordLogin: () -> Unit,
     onIntent: (AuthUiIntent) -> Unit,
     onGoogleLogin: () -> Unit,
     onGithubLogin: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
+    val socialEnabled = !uiState.isLoading
 
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-    ) {
-        Spacer(modifier = Modifier.height(32.dp))
-
+    AuthScreenScaffold(snackbarHostState = snackbarHostState) {
         AuthHeader()
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         EmailField(
             value = uiState.email,
@@ -197,39 +192,30 @@ private fun AuthScreenContent(
             onNext = { focusManager.moveFocus(FocusDirection.Down) }
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         PasswordField(
             value = uiState.password,
             error = uiState.passwordError,
             enabled = !uiState.isLoading,
             onValueChange = { onIntent(AuthUiIntent.PasswordChanged(it)) },
+            onForgotPassword = { onIntent(AuthUiIntent.ForgotPasswordClicked) },
             onDone = {
                 focusManager.clearFocus()
                 onEmailPasswordLogin()
             }
         )
 
-
-
-        TextButton(
-            onClick = { onIntent(AuthUiIntent.ForgotPasswordClicked) },
-            modifier = Modifier.align(Alignment.End),
-            enabled = !uiState.isLoading,
-        ) {
-            Text("Forgot password?")
-        }
-
         AnimatedVisibility(visible = uiState.error != null) {
             Text(
                 text = uiState.error?.toUserMessage() ?: "",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier.padding(top = 12.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         SignInButton(
             isEnable = uiState.signInButtonIsEnable,
@@ -237,54 +223,79 @@ private fun AuthScreenContent(
             onClick = onEmailPasswordLogin,
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            HorizontalDivider(modifier = Modifier.weight(1f))
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
             Text(
-                "  or continue with  ",
+                text = "or",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 14.dp),
             )
-            HorizontalDivider(modifier = Modifier.weight(1f))
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        GoogleLoginButton(
-            isLoading = uiState.isGoogleLoading,
-            onClick = onGoogleLogin
-        )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            GoogleLoginButton(
+                isLoading = uiState.isGoogleLoading,
+                enabled = socialEnabled,
+                onClick = onGoogleLogin,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            GithubLoginButton(
+                isLoading = uiState.isGithubLoading,
+                enabled = socialEnabled,
+                onClick = onGithubLogin,
+                modifier = Modifier.weight(1f),
+            )
+        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
-        GithubLoginButton(
-            isLoading = uiState.isGithubLoading,
-            onClick = onGithubLogin
+        Text(
+            text = "If you don't have an account yet, we'll set one up.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
         )
     }
 }
 
-@Preview
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AuthScreenContentPreview() {
-    AuthScreenContent(
-        uiState = AuthUiState(),
-        onIntent = {},
-        onEmailPasswordLogin = {},
-        onGoogleLogin = {},
-        onGithubLogin = {},
-    )
+    AtlasFlyTheme {
+        AuthScreenContent(
+            uiState = AuthUiState(),
+            snackbarHostState = SnackbarHostState(),
+            onIntent = {},
+            onEmailPasswordLogin = {},
+            onGoogleLogin = {},
+            onGithubLogin = {},
+        )
+    }
 }
 
-@Preview
+@Preview(showBackground = true, showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun AuthScreenContentWantsToSignUpPreview() {
-    AuthScreenContent(
-        uiState = AuthUiState(),
-        onIntent = {},
-        onEmailPasswordLogin = {},
-        onGoogleLogin = {},
-        onGithubLogin = {},
-    )
+fun AuthScreenContentDarkPreview() {
+    AtlasFlyTheme(darkTheme = true) {
+        AuthScreenContent(
+            uiState = AuthUiState(email = "maya@atlasfly.app", error = AuthError.InvalidCredentials),
+            snackbarHostState = SnackbarHostState(),
+            onIntent = {},
+            onEmailPasswordLogin = {},
+            onGoogleLogin = {},
+            onGithubLogin = {},
+        )
+    }
 }

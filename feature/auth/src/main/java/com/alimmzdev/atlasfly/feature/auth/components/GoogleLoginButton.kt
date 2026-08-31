@@ -1,6 +1,8 @@
 package com.alimmzdev.atlasfly.feature.auth.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,26 +22,41 @@ import tech.nullexdev.atlasfly.feature.auth.presentation.R
 @Composable
 internal fun GoogleLoginButton(
     isLoading: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit,
-){
+    modifier: Modifier = Modifier,
+) {
     OutlinedButton(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(52.dp),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
         onClick = onClick,
-        enabled = !isLoading,
+        enabled = enabled && !isLoading,
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.35f),
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp),
     ) {
         if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+            CircularProgressIndicator(
+                modifier = Modifier.size(18.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
         } else {
             Image(
                 painter = painterResource(R.drawable.google_icon_logo),
                 contentDescription = null,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(18.dp),
             )
             Spacer(Modifier.width(8.dp))
-            Text("Continue with Google")
+            Text(
+                text = "Google",
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
     }
 }

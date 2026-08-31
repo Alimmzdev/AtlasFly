@@ -30,6 +30,7 @@ android {
 
 dependencies {
     implementation(projects.service.domain)
+    implementation(projects.core.designSystem)
 
     // Firebase
     implementation(libs.firebase.auth)

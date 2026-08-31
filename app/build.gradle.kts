@@ -49,6 +49,7 @@ dependencies {
     implementation(projects.feature.auth)
     implementation(projects.service.domain)
     implementation(projects.service.data)
+    implementation(projects.core.designSystem)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

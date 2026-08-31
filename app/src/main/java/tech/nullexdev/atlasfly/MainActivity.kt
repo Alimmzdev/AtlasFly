@@ -12,7 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import dagger.hilt.android.AndroidEntryPoint
 import tech.nullexdev.atlasfly.app.AtlasFlyApp
-import tech.nullexdev.atlasfly.ui.theme.AtlasFlyTheme
+import tech.nullexdev.atlasfly.core.designsystem.theme.AtlasFlyTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

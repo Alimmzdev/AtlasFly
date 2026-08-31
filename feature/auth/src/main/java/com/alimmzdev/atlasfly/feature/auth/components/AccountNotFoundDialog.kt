@@ -1,16 +1,25 @@
 package com.alimmzdev.atlasfly.feature.auth.components
 
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.PersonAddAlt
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 
 @Composable
 internal fun AccountNotFoundDialog(
@@ -18,42 +27,54 @@ internal fun AccountNotFoundDialog(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onCancel,
-        icon = {
-            Icon(
-                imageVector = Icons.Outlined.PersonAddAlt,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        },
-        title = {
+    Dialog(onDismissRequest = onCancel) {
+        Column(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.extraLarge)
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(horizontal = 24.dp, vertical = 24.dp),
+        ) {
             Text(
-                text = "No account found",
-                style = MaterialTheme.typography.titleMedium,
+                text = "New around here?",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
-        },
-        text = {
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = if (email != null) {
-                    "We couldn't find an account for $email. Would you like to create one?"
+                text = if (email.isNotBlank()) {
+                    "There's no account for $email yet. Want us to make one?"
                 } else {
-                    "We couldn't find an account with these details. Would you like to create one?"
+                    "There's no account with these details yet. Want us to make one?"
                 },
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Start,
             )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text("Create Account")
+            Spacer(modifier = Modifier.height(24.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = onCancel) {
+                    Text(
+                        text = "Not now",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = onConfirm,
+                    shape = MaterialTheme.shapes.small,
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                ) {
+                    Text(
+                        text = "Create it",
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onCancel) {
-                Text("Cancel")
-            }
-        },
-        shape = RoundedCornerShape(20.dp),
-    )
+        }
+    }
 }
