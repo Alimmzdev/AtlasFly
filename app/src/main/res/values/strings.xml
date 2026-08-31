@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">AtlasFly</string>
+    <string name="language_english">EN</string>
+    <string name="language_persian">فا</string>
+    <string name="language_switcher_cd">Language</string>
     <string name="home_screen">Home</string>
     <string name="flights_screen">Flights</string>
     <string name="profile_screen">Profile</string>

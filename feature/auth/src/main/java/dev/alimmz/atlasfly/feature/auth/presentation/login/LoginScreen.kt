@@ -288,6 +288,21 @@ fun LoginScreenContentPreview() {
     }
 }
 
+@Preview(showBackground = true, showSystemUi = true, locale = "fa", name = "Login FA")
+@Composable
+fun LoginScreenContentPersianPreview() {
+    AtlasFlyTheme {
+        LoginScreenContent(
+            uiState = LoginUiState(),
+            snackbarHostState = SnackbarHostState(),
+            onIntent = {},
+            onEmailPasswordLogin = {},
+            onGoogleLogin = {},
+            onGithubLogin = {},
+        )
+    }
+}
+
 @Preview(showBackground = true, showSystemUi = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun LoginScreenContentDarkPreview() {

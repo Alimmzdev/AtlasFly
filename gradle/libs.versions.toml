@@ -5,6 +5,7 @@ googleid = "1.2.0"
 kotlin = "2.4.10"
 jetbrainsKotlinJvm = "2.4.10"
 coreKtx = "1.19.0"
+appcompat = "1.7.1"
 coreSplashscreen = "1.2.0"
 lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
@@ -33,6 +34,7 @@ firebaseAuthKtx = "24.2.0"
 [libraries]
 # AndroidX
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentialsPlayServicesAuth" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }

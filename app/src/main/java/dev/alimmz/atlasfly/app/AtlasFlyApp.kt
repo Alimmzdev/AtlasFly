@@ -3,6 +3,8 @@ package dev.alimmz.atlasfly.app
 import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -89,6 +91,12 @@ fun AtlasFlyApp(
                     viewModel = viewModel,
                 )
             }
+        )
+        LanguageSwitcher(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp, top = 8.dp),
         )
         if (uiState.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
