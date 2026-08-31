@@ -3,7 +3,7 @@ package auth.datasource.local
 import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import tech.nullexdev.atlasfly.core.local.model.AuthTokens
+import dev.alimmz.atlasfly.core.local.model.AuthTokens
 import javax.inject.Inject
 
 class AuthLocalDatasourceImpl @Inject constructor(

@@ -5,7 +5,7 @@ plugins {
     id("com.google.devtools.ksp")
 }
 android {
-    namespace = "tech.nullexdev.atlasfly.feature.auth.presentation"
+    namespace = "dev.alimmz.atlasfly.feature.auth.presentation"
     compileSdk = 37
 
     defaultConfig {

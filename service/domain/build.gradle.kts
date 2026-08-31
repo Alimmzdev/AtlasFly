@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "tech.nullexdev.atlasfly.service.domain"
+    namespace = "dev.alimmz.atlasfly.service.domain"
     compileSdk = 37
 
     defaultConfig {

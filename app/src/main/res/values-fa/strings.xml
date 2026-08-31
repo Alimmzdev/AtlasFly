@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AtlasFly</string>
+    <string name="home_screen">خانه</string>
+    <string name="flights_screen">پروازها</string>
+    <string name="profile_screen">پروفایل</string>
+    <string name="email_verified_success">ایمیل با موفقیت تأیید شد</string>
+    <string name="error_invalid_action_code">این لینک تأیید نامعتبر است یا منقضی شده</string>
+    <string name="error_email_not_verified">ایمیل هنوز تأیید نشده. اینباکس‌تو چک کن و دوباره امتحان کن</string>
+    <string name="error_network">خطای شبکه. دوباره امتحان کن</string>
+    <string name="error_too_many">تلاش‌های زیاد. بعداً دوباره امتحان کن</string>
+    <string name="error_unknown">مشکلی پیش آمد. دوباره امتحان کن</string>
+</resources>

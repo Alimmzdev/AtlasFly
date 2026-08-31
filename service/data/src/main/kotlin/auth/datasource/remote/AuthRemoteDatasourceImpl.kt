@@ -55,7 +55,7 @@ class AuthRemoteDatasourceImpl @Inject constructor(
             )
             .await()
         result.user?.sendEmailVerification(
-            buildEmailVerificationActionCodeSettings()
+            buildEmailActionCodeSettings(EMAIL_VERIFICATION_CONTINUE_URL)
         )?.await()
     }
 
@@ -78,12 +78,27 @@ class AuthRemoteDatasourceImpl @Inject constructor(
     override suspend fun resendEmailVerification() {
         val user = firebaseAuth.currentUser
             ?: throw IllegalStateException("No signed-in Firebase user")
-        user.sendEmailVerification(buildEmailVerificationActionCodeSettings()).await()
+        user.sendEmailVerification(buildEmailActionCodeSettings(EMAIL_VERIFICATION_CONTINUE_URL)).await()
     }
 
-    private fun buildEmailVerificationActionCodeSettings(): ActionCodeSettings {
+    override suspend fun sendPasswordResetEmail(email: String) {
+        firebaseAuth.sendPasswordResetEmail(
+            email.trim(),
+            buildEmailActionCodeSettings(PASSWORD_RESET_CONTINUE_URL),
+        ).await()
+    }
+
+    override suspend fun verifyPasswordResetCode(oobCode: String): String {
+        return firebaseAuth.verifyPasswordResetCode(oobCode).await()
+    }
+
+    override suspend fun confirmPasswordReset(oobCode: String, newPassword: String) {
+        firebaseAuth.confirmPasswordReset(oobCode, newPassword).await()
+    }
+
+    private fun buildEmailActionCodeSettings(continueUrl: String): ActionCodeSettings {
         return ActionCodeSettings.newBuilder()
-            .setUrl(EMAIL_VERIFICATION_CONTINUE_URL)
+            .setUrl(continueUrl)
             .setHandleCodeInApp(true)
             .setAndroidPackageName(ANDROID_PACKAGE_NAME, false, null)
             .build()
@@ -102,6 +117,8 @@ class AuthRemoteDatasourceImpl @Inject constructor(
     private companion object {
         const val EMAIL_VERIFICATION_CONTINUE_URL: String =
             "https://atlasfly.nullexdev.tech/atlasfly-email-verified"
-        const val ANDROID_PACKAGE_NAME: String = "tech.nullexdev.atlasfly"
+        const val PASSWORD_RESET_CONTINUE_URL: String =
+            "https://atlasfly.nullexdev.tech/atlasfly-password-reset"
+        const val ANDROID_PACKAGE_NAME: String = "dev.alimmz.atlasfly"
     }
 }

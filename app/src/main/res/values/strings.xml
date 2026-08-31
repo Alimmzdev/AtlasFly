@@ -1,3 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">AtlasFly</string>
+    <string name="home_screen">Home</string>
+    <string name="flights_screen">Flights</string>
+    <string name="profile_screen">Profile</string>
+    <string name="email_verified_success">Email verified successfully</string>
+    <string name="error_invalid_action_code">This verification link is invalid or has expired</string>
+    <string name="error_email_not_verified">Email is not verified yet. Check your inbox and try again</string>
+    <string name="error_network">Network error. Please try again</string>
+    <string name="error_too_many">Too many attempts. Please try again later</string>
+    <string name="error_unknown">Something went wrong. Please try again</string>
 </resources>

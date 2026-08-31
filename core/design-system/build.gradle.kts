@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "tech.nullexdev.atlasfly.core.designsystem"
+    namespace = "dev.alimmz.atlasfly.core.designsystem"
     compileSdk = 37
 
     defaultConfig {
