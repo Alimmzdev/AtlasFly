@@ -102,6 +102,6 @@ class AuthRemoteDatasourceImpl @Inject constructor(
     private companion object {
         const val EMAIL_VERIFICATION_CONTINUE_URL: String =
             "https://atlasfly.nullexdev.tech/atlasfly-email-verified"
-        const val ANDROID_PACKAGE_NAME: String = "tech.nullexdev.atlasfly"
+        const val ANDROID_PACKAGE_NAME: String = "dev.alimmz.atlasfly"
     }
 }

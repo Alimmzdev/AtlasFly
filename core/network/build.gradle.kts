@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "tech.nullexdev.atlasfly.core.network"
+    namespace = "dev.alimmz.atlasfly.core.network"
     compileSdk = 37
     defaultConfig {
         minSdk = 24

@@ -7,13 +7,13 @@ plugins {
 }
 
 android {
-    namespace = "tech.nullexdev.atlasfly"
+    namespace = "dev.alimmz.atlasfly"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "tech.nullexdev.atlasfly"
+        applicationId = "dev.alimmz.atlasfly"
         minSdk = 24
         targetSdk = 37
         versionCode = 1

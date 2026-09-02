@@ -1,7 +1,7 @@
 package auth.datasource.remote
 
 import auth.model.AuthProvider
-import tech.nullexdev.atlasfly.core.local.model.AuthTokens
+import dev.alimmz.atlasfly.core.local.model.AuthTokens
 
 interface AuthRemoteDatasource {
     suspend fun isAuthorized(): Boolean

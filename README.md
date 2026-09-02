@@ -200,7 +200,7 @@ These map directly to common **EU Android job requirements**:
 
 ### Firebase setup (required for auth)
 
-1. Create a Firebase project and add an Android app with package `tech.nullexdev.atlasfly`
+1. Create a Firebase project and add an Android app with package `dev.alimmz.atlasfly`
 2. Download `google-services.json` into `app/`
 3. Enable **Email/Password**, **Google**, and **GitHub** sign-in in Firebase Console
 4. Configure OAuth redirect URIs for GitHub if using GitHub login
@@ -225,7 +225,7 @@ These map directly to common **EU Android job requirements**:
 
 ## Project conventions
 
-- **Package scheme:** `tech.nullexdev.atlasfly.{layer}.{module}`
+- **Package scheme:** `dev.alimmz.atlasfly.{layer}.{module}`
 - **Feature modules** own their screens, ViewModels, and UI components
 - **Service modules** encapsulate backend integration (Firebase Auth today)
 - **Core modules** provide shared infrastructure consumed by features

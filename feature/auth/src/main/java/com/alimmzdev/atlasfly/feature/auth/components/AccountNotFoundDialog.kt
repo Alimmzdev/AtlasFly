@@ -35,11 +35,7 @@ internal fun AccountNotFoundDialog(
         },
         text = {
             Text(
-                text = if (email != null) {
-                    "We couldn't find an account for $email. Would you like to create one?"
-                } else {
-                    "We couldn't find an account with these details. Would you like to create one?"
-                },
+                text = "We couldn't find an account for $email. Would you like to create one?",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Start,
             )
