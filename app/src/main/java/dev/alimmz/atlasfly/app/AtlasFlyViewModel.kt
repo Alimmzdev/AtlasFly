@@ -13,9 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import dev.alimmz.atlasfly.app.deeplink.AuthDeepLink
-import dev.alimmz.atlasfly.app.deeplink.AuthDeepLinkParser
-import dev.alimmz.atlasfly.R
+import dev.alimmz.atlasfly.app.deeplink.EmailVerificationDeepLink
+import dev.alimmz.atlasfly.app.deeplink.EmailVerificationDeepLinkParser
 import dev.alimmz.atlasfly.core.navigation.Routes
 import javax.inject.Inject
 
