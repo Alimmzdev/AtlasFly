@@ -68,7 +68,16 @@ AtlasFly/
 - Android Studio Quail (2026.1) or later
 - JDK 11+
 
-### Build & Run
+### Firebase setup (required for auth)
+
+1. Create a Firebase project and add an Android app with package `dev.alimmz.atlasfly`
+2. Download `google-services.json` into `app/`
+3. Enable **Email/Password**, **Google**, and **GitHub** sign-in in Firebase Console
+4. Configure OAuth redirect URIs for GitHub if using GitHub login
+
+> The repo includes a placeholder `google-services.json`. Replace it with your own for local development.
+
+### Build & run
 
 ```bash
 ./gradlew assembleDebug
@@ -82,10 +91,30 @@ Install on a connected device or emulator:
 
 ## Project Structure Conventions
 
-- **Package scheme:** `tech.nullexdev.atlasfly.{layer}.{module}`
-- **Each feature module** is self-contained — it declares its own navigation, screen composables, and ViewModels
-- **Core modules** provide shared logic consumed by feature and service modules
-- **Service modules** handle external API / backend integration independently
+- **Package scheme:** `dev.alimmz.atlasfly.{layer}.{module}`
+- **Feature modules** own their screens, ViewModels, and UI components
+- **Service modules** encapsulate backend integration (Firebase Auth today)
+- **Core modules** provide shared infrastructure consumed by features
+- **Use cases** expose single-responsibility domain operations
+- **Version catalog:** bump dependencies in `gradle/libs.versions.toml`, reference via `libs.*`
+
+---
+
+## About the author
+
+**ALI Mohammadzadeh** — Android Developer
+
+Building AtlasFly to showcase how I approach real-world Android development: modular architecture, thoughtful UX, and code that teams can maintain and extend.
+
+| | |
+|---|---|
+| **GitHub** | [Alimmzdev](https://github.com/Alimmzdev) |
+| **Location** | Open to EU opportunities (remote / relocation) |
+| **Focus** | Kotlin · Jetpack Compose · Clean Architecture · Product-quality UX |
+
+> **Recruiters:** A video walkthrough and screenshots significantly improve first impressions — see [`docs/media/README.md`](docs/media/README.md) for the asset checklist.
+
+---
 
 ## License
 

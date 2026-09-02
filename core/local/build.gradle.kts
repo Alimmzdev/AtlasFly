@@ -6,7 +6,7 @@
 }
 
 android {
-    namespace = "tech.nullexdev.atlasfly.core.local"
+    namespace = "dev.alimmz.atlasfly.core.local"
     compileSdk = 37
 
     defaultConfig {
