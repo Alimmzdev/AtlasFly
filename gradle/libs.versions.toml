@@ -10,14 +10,14 @@ lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
 composeBom = "2026.06.01"
 coil = "3.5.0"
-nav3 = "1.1.4"
+nav3 = "1.1.5"
 hilt = "2.60.1"
 hiltNavigationCompose = "1.4.0"
 ksp = "2.3.10"
-ktor = "3.5.1"
+ktor = "3.5.2"
 chucker = "4.3.1"
 kotlinxSerialization = "1.11.0"
-annotationExperimental = "1.4.1"
+annotationExperimental = "1.6.0"
 datastore = "1.2.1"
 tink = "1.23.0"
 protobuf = "4.35.1"
@@ -58,6 +58,7 @@ coil-network-ktor3 = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", 
 coil-core = { group = "io.coil-kt.coil3", name = "coil-core", version.ref = "coil" }
 
 # Navigation
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 nav3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "nav3" }
 nav3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "nav3" }
 

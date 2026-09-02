@@ -21,7 +21,7 @@ class CryptoManager @Inject constructor(
         private const val MASTER_KEY_URI = "android-keystore://_atlasfly_auth_master_key_"
     }
 
-    private val aead: Aead by lazy {
+    val aead: Aead by lazy {
         AeadConfig.register()
         try {
             buildAead()

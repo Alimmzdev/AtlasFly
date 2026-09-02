@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_title">Welcome to AtlasFly</string>
+    <string name="auth_subtitle">Sign in or create an account to start planning your trips.</string>
+</resources>
