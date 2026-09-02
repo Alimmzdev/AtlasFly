@@ -1,6 +1,8 @@
 plugins {
-    id("java-library")
-    alias(libs.plugins.jetbrains.kotlin.jvm)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 android {
@@ -17,12 +19,15 @@ android {
     }
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
 kotlin {
     compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
+}
+
+dependencies {
+    implementation(projects.core.domain)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 }

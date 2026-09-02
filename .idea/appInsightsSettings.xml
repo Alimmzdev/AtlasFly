@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="dev.alimmz.atlasfly" />
-                  <option name="mobileSdkAppId" value="1:59320649493:android:fe453ad2c091b6c1488b1c" />
-                  <option name="projectId" value="atlasfly-88456" />
-                  <option name="projectNumber" value="59320649493" />
+                  <option name="appId" value="PLACEHOLDER" />
+                  <option name="mobileSdkAppId" value="" />
+                  <option name="projectId" value="" />
+                  <option name="projectNumber" value="" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
