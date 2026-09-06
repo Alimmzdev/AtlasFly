@@ -11,6 +11,7 @@ interface AuthRepository {
     fun signup(provider: AuthProvider.EmailPassword): Flow<AuthResult>
     fun verifyEmail(oobCode: String): Flow<AuthResult>
     suspend fun isEmailVerified(): Boolean
+    suspend fun getUnverifiedUserEmail(): String?
     fun resendEmailVerification(): Flow<AuthResult>
     fun sendPasswordResetEmail(email: String): Flow<AuthResult>
     suspend fun verifyPasswordResetCode(oobCode: String): ResetCodeResult

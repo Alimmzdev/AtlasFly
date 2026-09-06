@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import auth.model.AuthError
 import auth.model.AuthResult
+import auth.usecase.GetUnverifiedUserEmailUseCase
 import auth.usecase.IsAuthorizedUseCase
 import auth.usecase.IsEmailVerifiedUseCase
+import auth.usecase.LogoutUseCase
 import auth.usecase.VerifyEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +27,8 @@ class AtlasFlyViewModel @Inject constructor(
     private val isAuthorizedUseCase: IsAuthorizedUseCase,
     private val verifyEmailUseCase: VerifyEmailUseCase,
     private val isEmailVerifiedUseCase: IsEmailVerifiedUseCase,
+    private val getUnverifiedUserEmailUseCase: GetUnverifiedUserEmailUseCase,
+    private val logoutUseCase: LogoutUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AtlasFlyUiState())
@@ -50,10 +54,24 @@ class AtlasFlyViewModel @Inject constructor(
     private fun loadData() {
         viewModelScope.launch {
             val isAuthorized: Boolean = isAuthorizedUseCase.invoke()
+            if (isAuthorized) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isAuthorized = true,
+                    )
+                }
+                return@launch
+            }
+
+            val unverifiedEmail: String? = getUnverifiedUserEmailUseCase.invoke()
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    isAuthorized = isAuthorized,
+                    isAuthorized = false,
+                    pendingNavigation = unverifiedEmail?.let { email ->
+                        Routes.Auth.SignUpEmailVerification(email)
+                    } ?: it.pendingNavigation,
                 )
             }
         }
@@ -127,6 +145,14 @@ class AtlasFlyViewModel @Inject constructor(
 
     private fun logout() {
         viewModelScope.launch {
+            logoutUseCase()
+            _uiState.update {
+                it.copy(
+                    isAuthorized = false,
+                    isLoading = false,
+                    pendingNavigation = Routes.Auth.Login,
+                )
+            }
         }
     }
 

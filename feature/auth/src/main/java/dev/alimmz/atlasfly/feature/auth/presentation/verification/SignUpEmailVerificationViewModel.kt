@@ -59,11 +59,17 @@ class SignUpEmailVerificationViewModel @Inject constructor(
                             message = R.string.auth_verify_email_sent,
                         )
                     }
-                    is AuthResult.Failure -> _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.error.toMessageRes(),
+                    is AuthResult.Failure -> {
+                        UiLogger.logEvent(
+                            "SignUpEmailVerificationViewModel.ResendFailed",
+                            result.error,
                         )
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.error.toMessageRes(),
+                            )
+                        }
                     }
                 }
             }

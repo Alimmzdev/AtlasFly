@@ -8,7 +8,6 @@ import auth.model.AuthProvider.EmailPassword
 import auth.model.AuthProvider.Github
 import auth.model.AuthProvider.Google
 import auth.model.AuthResult
-import auth.usecase.IsAuthorizedUseCase
 import auth.usecase.LoginUseCase
 import auth.usecase.LogoutUseCase
 import auth.usecase.RefreshTokensUseCase
@@ -30,7 +29,6 @@ class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val signupUseCase: SignupUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val isAuthorizedUseCase: IsAuthorizedUseCase,
     private val refreshTokensUseCase: RefreshTokensUseCase,
 ) : ViewModel() {
 
@@ -44,7 +42,6 @@ class LoginViewModel @Inject constructor(
 
     init {
         UiLogger.observeState(viewModelScope, "LoginViewModel", uiState)
-        checkAuthorized()
     }
 
     fun onIntent(intent: LoginUiIntent) {
@@ -78,14 +75,6 @@ class LoginViewModel @Inject constructor(
                 }
             }
             LoginUiIntent.NavigateToSignUp -> {}
-        }
-    }
-
-    private fun checkAuthorized() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isCheckingAuth = true) }
-            val isAuthorized = isAuthorizedUseCase()
-            _uiState.update { it.copy(isLoggedIn = isAuthorized, isCheckingAuth = false) }
         }
     }
 

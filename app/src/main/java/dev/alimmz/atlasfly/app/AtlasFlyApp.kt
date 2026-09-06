@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,10 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dev.alimmz.atlasfly.feature.auth.presentation.forgotpassword.ForgotPasswordScreen
@@ -32,23 +28,38 @@ import dev.alimmz.atlasfly.core.navigation.Routes
 @Composable
 fun AtlasFlyApp(
     deepLinkUri: Uri? = null,
-    viewModel: AtlasFlyViewModel = hiltViewModel(
-        checkNotNull<ViewModelStoreOwner>(
-            LocalViewModelStoreOwner.current
-        ) {
-            "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
-        }, null
-    )
+    viewModel: AtlasFlyViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val backStack = remember {
-        mutableStateListOf(if (uiState.isAuthorized) Routes.Home else Routes.Auth.Login)
+
+    // Keep composition empty while splash covers auth bootstrap.
+    if (uiState.isLoading) {
+        Box(modifier = Modifier.fillMaxSize())
+        return
     }
+
+    val backStack = remember {
+        mutableStateListOf(
+            when {
+                uiState.isAuthorized -> Routes.Home
+                uiState.pendingNavigation != null -> uiState.pendingNavigation!!
+                else -> Routes.Auth.Login
+            }
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        if (uiState.pendingNavigation != null) {
+            viewModel.onEvent(AtlasFlyEvent.DeepLinkHandled)
+        }
+    }
+
     LaunchedEffect(deepLinkUri) {
         deepLinkUri?.let { uri ->
             viewModel.onEvent(AtlasFlyEvent.HandleDeepLink(uri))
         }
     }
+
     LaunchedEffect(uiState.pendingNavigation) {
         uiState.pendingNavigation?.let { route ->
             when (route) {
@@ -62,6 +73,10 @@ fun AtlasFlyApp(
                     backStack.add(Routes.Auth.Login)
                     backStack.add(route)
                 }
+                is Routes.Auth.SignUpEmailVerification -> {
+                    backStack.clear()
+                    backStack.add(route)
+                }
                 else -> {
                     backStack.clear()
                     backStack.add(route)
@@ -70,6 +85,7 @@ fun AtlasFlyApp(
             viewModel.onEvent(AtlasFlyEvent.DeepLinkHandled)
         }
     }
+
     LaunchedEffect(uiState.isAuthorized) {
         val top = backStack.lastOrNull()
         val stayingOnAuth = top is Routes.Auth.ResetPassword || top is Routes.Auth.ForgotPassword
@@ -78,6 +94,7 @@ fun AtlasFlyApp(
             backStack.add(Routes.Home)
         }
     }
+
     Box(modifier = Modifier.fillMaxSize()) {
         NavDisplay(
             backStack = backStack,
@@ -99,9 +116,6 @@ fun AtlasFlyApp(
                 .statusBarsPadding()
                 .padding(end = 16.dp, top = 8.dp),
         )
-        if (uiState.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        }
         uiState.errorMessage?.let { errorMessage ->
             Text(
                 text = stringResource(errorMessage),

@@ -14,6 +14,11 @@ class AuthTokensSerializer(
     private val aead: Aead
 ) : Serializer<AuthTokens> {
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+    }
+
     override val defaultValue: AuthTokens = AuthTokens()
 
     override suspend fun readFrom(input: InputStream): AuthTokens {
@@ -23,14 +28,14 @@ class AuthTokensSerializer(
                 return defaultValue
             }
             val decryptedBytes = aead.decrypt(encryptedBytes, null)
-            Json.decodeFromString<AuthTokens>(decryptedBytes.decodeToString())
+            json.decodeFromString<AuthTokens>(decryptedBytes.decodeToString())
         } catch (e: Exception) {
             throw CorruptionException("Cannot read auth tokens.", e)
         }
     }
 
     override suspend fun writeTo(t: AuthTokens, output: OutputStream) {
-        val jsonBytes = Json.encodeToString(AuthTokens.serializer(), t).toByteArray()
+        val jsonBytes = json.encodeToString(AuthTokens.serializer(), t).toByteArray()
         val encryptedBytes = aead.encrypt(jsonBytes, null)
         withContext(Dispatchers.IO) {
             output.write(encryptedBytes)

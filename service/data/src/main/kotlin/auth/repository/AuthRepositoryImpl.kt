@@ -1,5 +1,6 @@
 package auth.repository
 
+import auth.datasource.local.AuthLocalDatasource
 import auth.datasource.remote.AuthRemoteDatasource
 import auth.model.AuthError
 import auth.model.AuthProvider
@@ -23,10 +24,18 @@ import kotlin.coroutines.cancellation.CancellationException
 
 class AuthRepositoryImpl @Inject constructor(
     private val authRemoteDatasource: AuthRemoteDatasource,
+    private val authLocalDatasource: AuthLocalDatasource,
 ) : AuthRepository {
 
     override suspend fun isAuthorized(): Boolean {
-        return authRemoteDatasource.isAuthorized()
+        if (authLocalDatasource.isAuthorized()) {
+            return true
+        }
+        val remoteAuthorized = authRemoteDatasource.isAuthorized()
+        if (remoteAuthorized) {
+            persistCurrentSession()
+        }
+        return remoteAuthorized
     }
 
     override fun login(provider: AuthProvider): Flow<AuthResult> = flow {
@@ -38,6 +47,7 @@ class AuthRepositoryImpl @Inject constructor(
         ) {
             emit(AuthResult.Failure(AuthError.EmailNotVerified))
         } else {
+            persistCurrentSession()
             emit(AuthResult.Success)
         }
     }
@@ -55,13 +65,22 @@ class AuthRepositoryImpl @Inject constructor(
     override fun verifyEmail(oobCode: String): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
         authRemoteDatasource.verifyEmail(oobCode)
+        persistCurrentSession()
         emit(AuthResult.Success)
     }
         .catch { e -> emit(e.toAuthResultFailure()) }
         .flowOn(Dispatchers.IO)
 
     override suspend fun isEmailVerified(): Boolean {
-        return authRemoteDatasource.isEmailVerified()
+        val verified = authRemoteDatasource.isEmailVerified()
+        if (verified) {
+            persistCurrentSession()
+        }
+        return verified
+    }
+
+    override suspend fun getUnverifiedUserEmail(): String? {
+        return authRemoteDatasource.getUnverifiedUserEmail()
     }
 
     override fun resendEmailVerification(): Flow<AuthResult> = flow {
@@ -107,13 +126,22 @@ class AuthRepositoryImpl @Inject constructor(
     override fun refreshTokens(): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
         authRemoteDatasource.refreshTokens()
+        persistCurrentSession()
         emit(AuthResult.Success)
     }
         .catch { e -> emit(e.toAuthResultFailure()) }
         .flowOn(Dispatchers.IO)
 
     override suspend fun logout() {
+        authLocalDatasource.clearAuthTokens()
         authRemoteDatasource.logout()
+    }
+
+    private suspend fun persistCurrentSession() {
+        val session = authRemoteDatasource.getCurrentSession() ?: return
+        if (session.hasVerifiedSession) {
+            authLocalDatasource.saveAuthTokens(session)
+        }
     }
 }
 
@@ -129,5 +157,5 @@ private fun Throwable.toAuthError(): AuthError = when (this) {
     is FirebaseTooManyRequestsException -> AuthError.TooManyAttempts
     is CancellationException -> AuthError.Cancelled
     is IOException -> AuthError.NetworkError
-    else -> AuthError.Unknown()
+    else -> AuthError.Unknown(cause = this)
 }
