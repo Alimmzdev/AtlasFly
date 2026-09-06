@@ -87,6 +87,7 @@ dependencies {
 
     //Navigation
     implementation(projects.core.navigation)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.nav3.ui)
 
     //Coil image loader

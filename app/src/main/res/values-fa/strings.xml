@@ -15,4 +15,8 @@
     <string name="error_network">خطای شبکه. دوباره امتحان کن</string>
     <string name="error_too_many">تلاش‌های زیاد. بعداً دوباره امتحان کن</string>
     <string name="error_unknown">مشکلی پیش آمد. دوباره امتحان کن</string>
+    <string name="language_title">زبان برنامه</string>
+    <string name="language_hint">زبان برنامه را انتخاب کن. تغییرات به‌صورت خودکار ذخیره می‌شوند.</string>
+    <string name="language_english_name">انگلیسی</string>
+    <string name="language_persian_name">فارسی</string>
 </resources>

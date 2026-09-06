@@ -6,4 +6,5 @@
     <string name="profile_preferences">ترجیحات</string>
     <string name="profile_account_settings">تنظیمات حساب</string>
     <string name="profile_logout">خروج از حساب</string>
+    <string name="profile_language">زبان برنامه</string>
 </resources>

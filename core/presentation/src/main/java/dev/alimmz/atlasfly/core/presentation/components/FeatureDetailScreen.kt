@@ -28,6 +28,7 @@ fun FeatureDetailScreen(
     @StringRes titleRes: Int,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    content: (@Composable () -> Unit)? = null,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         TopAppBar(
@@ -41,11 +42,15 @@ fun FeatureDetailScreen(
                 }
             },
         )
-        Text(
-            text = stringResource(R.string.shell_coming_soon),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-        )
+        if (content != null) {
+            content()
+        } else {
+            Text(
+                text = stringResource(R.string.shell_coming_soon),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+            )
+        }
     }
 }

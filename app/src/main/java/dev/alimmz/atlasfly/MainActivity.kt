@@ -3,7 +3,9 @@ package dev.alimmz.atlasfly
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -17,7 +19,7 @@ import dev.alimmz.atlasfly.app.AtlasFlyViewModel
 import dev.alimmz.atlasfly.core.designsystem.theme.AtlasFlyTheme
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val viewModel: AtlasFlyViewModel by viewModels()
     private var deepLinkUri by mutableStateOf<Uri?>(null)
@@ -26,6 +28,12 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
         splashScreen.setKeepOnScreenCondition { viewModel.uiState.value.isLoading }
         super.onCreate(savedInstanceState)
+        // AppCompat restores and persists selections locally (framework storage on Android 13+).
+        // Persist the supported device default as well when no selection exists yet.
+        if (AppCompatDelegate.getApplicationLocales().isEmpty) {
+            val defaultTag = if (resources.configuration.locales[0].language == "fa") "fa" else "en"
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(defaultTag))
+        }
         enableEdgeToEdge()
         deepLinkUri = intent?.data
         setContent {

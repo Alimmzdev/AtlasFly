@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.AtlasFly" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.AtlasFly" parent="Theme.AppCompat.DayNight.NoActionBar" />
 
     <style name="Theme.AtlasFly.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/atlas_paper</item>
+        <item name="windowSplashScreenBackground">@color/atlas_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_compass</item>
-        <item name="windowSplashScreenIconBackgroundColor">@color/atlas_paper</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/atlas_background</item>
         <item name="postSplashScreenTheme">@style/Theme.AtlasFly</item>
     </style>
 

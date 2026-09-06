@@ -1,6 +1,7 @@
 package dev.alimmz.atlasfly.app.main
 
 import androidx.compose.runtime.Composable
+import dev.alimmz.atlasfly.app.LanguageSwitcher
 import dev.alimmz.atlasfly.core.navigation.Routes
 import dev.alimmz.atlasfly.core.presentation.shell.MainSharedViewModel
 import dev.alimmz.atlasfly.feature.explore.presentation.ExploreScreen
@@ -47,6 +48,9 @@ fun MainDestination(
 
         Routes.Main.Preferences -> PreferencesScreen(onBack = onBack)
 
-        Routes.Main.AccountSettings -> AccountSettingsScreen(onBack = onBack)
+        Routes.Main.AccountSettings -> AccountSettingsScreen(
+            onBack = onBack,
+            languageSwitcher = { LanguageSwitcher(expanded = true) },
+        )
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="atlas_paper">#F2EBE0</color>
-    <color name="atlas_night">#141210</color>
-    <color name="atlas_teal">#058D9D</color>
+    <color name="atlas_background">#F8FAFC</color>
+    <color name="atlas_night">#0F141B</color>
+    <color name="atlas_teal">#087F8C</color>
 </resources>

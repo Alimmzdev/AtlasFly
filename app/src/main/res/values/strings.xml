@@ -15,4 +15,8 @@
     <string name="error_network">Network error. Please try again</string>
     <string name="error_too_many">Too many attempts. Please try again later</string>
     <string name="error_unknown">Something went wrong. Please try again</string>
+    <string name="language_title">App language</string>
+    <string name="language_hint">Choose your app language. Changes are saved automatically.</string>
+    <string name="language_english_name">English</string>
+    <string name="language_persian_name">Persian</string>
 </resources>

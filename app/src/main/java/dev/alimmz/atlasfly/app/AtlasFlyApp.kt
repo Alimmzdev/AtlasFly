@@ -10,6 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.toMutableStateList
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -45,7 +50,14 @@ fun AtlasFlyApp(
         return
     }
 
-    val backStack = remember {
+    val backStack = rememberSaveable(
+        saver = Saver(
+            save = { Json.encodeToString(ListSerializer(Routes.serializer()), it.toList()) },
+            restore = {
+                Json.decodeFromString(ListSerializer(Routes.serializer()), it).toMutableStateList()
+            },
+        ),
+    ) {
         mutableStateListOf<Routes>(
             when {
                 uiState.isAuthorized -> START_DESTINATION
@@ -129,12 +141,14 @@ fun AtlasFlyApp(
                 )
             }
         )
-        LanguageSwitcher(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(end = 16.dp, top = 8.dp),
-        )
+        if (backStack.lastOrNull() is Routes.Auth) {
+            LanguageSwitcher(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(end = 16.dp, top = 8.dp),
+            )
+        }
         uiState.errorMessage?.let { errorMessage ->
             Text(
                 text = stringResource(errorMessage),
