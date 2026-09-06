@@ -137,7 +137,7 @@ class AtlasFlyViewModel @Inject constructor(
                 isLoading = false,
                 isAuthorized = true,
                 emailVerificationMessage = R.string.email_verified_success,
-                pendingNavigation = Routes.Home,
+                pendingNavigation = Routes.Main.TopLevel.Home,
                 errorMessage = null,
             )
         }
