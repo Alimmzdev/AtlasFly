@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_brand">AtlasFly</string>
+    <string name="auth_title">کجا می‌ری؟</string>
+    <string name="auth_subtitle">وارد شو تا سفرهات ذخیره بشه. اگه تازه‌ای، برات حساب می‌سازیم.</string>
+    <string name="auth_email_label">ایمیل</string>
+    <string name="auth_email_placeholder">you@email.com</string>
+    <string name="auth_password_label">رمز عبور</string>
+    <string name="auth_password_placeholder">رمز عبورت</string>
+    <string name="auth_forgot">فراموش کردی؟</string>
+    <string name="auth_continue">ادامه</string>
+    <string name="auth_or">یا</string>
+    <string name="auth_create_account_hint">اگه هنوز حساب نداری، برات می‌سازیم.</string>
+    <string name="auth_google">گوگل</string>
+    <string name="auth_github">گیت‌هاب</string>
+    <string name="auth_back">بازگشت</string>
+    <string name="auth_show_password">نمایش رمز عبور</string>
+    <string name="auth_hide_password">پنهان کردن رمز عبور</string>
+    <string name="auth_google_failed">ورود با گوگل انجام نشد. دوباره امتحان کن؟</string>
+    <string name="auth_github_token_failed">توکن گیت‌هاب گرفته نشد. یک بار دیگر امتحان کن.</string>
+    <string name="auth_github_failed">ورود با گیت‌هاب ناموفق بود</string>
+    <string name="auth_dialog_title">اینجا تازه‌ای؟</string>
+    <string name="auth_dialog_body">هنوز حسابی با این مشخصات نیست. برات بسازیم؟</string>
+    <string name="auth_dialog_body_email">هنوز حسابی برای %1$s نیست. برات بسازیم؟</string>
+    <string name="auth_dialog_not_now">الان نه</string>
+    <string name="auth_dialog_create">بساز</string>
+
+    <string name="auth_check_inbox">اینباکس‌تو چک کن</string>
+    <string name="auth_verify_body">یه لینک فرستادیم تا مطمئن بشیم خودتی. بازش کن، بعد برگرد اینجا.</string>
+    <string name="auth_verify_confirmed">تأییدش کردم</string>
+    <string name="auth_verify_resend">نرسید؟ دوباره بفرست</string>
+    <string name="auth_verify_email_sent">ایمیل تأیید فرستاده شد</string>
+    <string name="auth_verify_not_verified">ایمیل هنوز تأیید نشده. اینباکس‌تو چک کن و دوباره امتحان کن</string>
+
+    <string name="auth_forgot_title">نمی‌تونی وارد بشی؟</string>
+    <string name="auth_forgot_body">ایمیل حسابت رو بگو. لینک بازنشانی رمز رو برات می‌فرستیم.</string>
+    <string name="auth_forgot_send">ارسال لینک بازنشانی</string>
+    <string name="auth_forgot_remembered">یادت اومد؟ وارد شو</string>
+    <string name="auth_forgot_inbox_body">لینک بازنشانی رو فرستادیم. روی همین گوشی بازش کن و رمز جدید بگذار.</string>
+    <string name="auth_forgot_open_email">باز کردن برنامه ایمیل</string>
+    <string name="auth_forgot_sending">در حال ارسال…</string>
+    <string name="auth_forgot_back_signin">بازگشت به ورود</string>
+    <string name="auth_forgot_resent">دوباره فرستاده شد. یه دقیقه صبر کن.</string>
+    <string name="auth_forgot_email_blank">ایمیل حسابت رو وارد کن</string>
+    <string name="auth_forgot_email_invalid">این شبیه ایمیل نیست</string>
+    <string name="auth_forgot_error_user_not_found">حساب AtlasFly با این ایمیل پیدا نشد.</string>
+    <string name="auth_forgot_error_invalid">این ایمیل قابل استفاده نیست.</string>
+    <string name="auth_forgot_error_too_many">خیلی تلاش کردی. کمی صبر کن، بعد دوباره بفرست.</string>
+    <string name="auth_forgot_error_network">اتصال اینترنتت رو چک کن و دوباره امتحان کن.</string>
+    <string name="auth_forgot_error_provider">این ایمیل با گوگل یا گیت‌هاب وارد می‌شود. از همان استفاده کن.</string>
+    <string name="auth_forgot_error_generic">لینک فرستاده نشد. دوباره امتحان کن.</string>
+
+    <string name="auth_reset_title">رمز جدید</string>
+    <string name="auth_reset_body">چیزی انتخاب کن که یادت بماند. حداقل ۶ کاراکتر.</string>
+    <string name="auth_reset_new_password">رمز جدید</string>
+    <string name="auth_reset_confirm">تأیید</string>
+    <string name="auth_reset_confirm_placeholder">دوباره بنویس</string>
+    <string name="auth_reset_update">به‌روزرسانی رمز</string>
+    <string name="auth_reset_success_title">تمام شد</string>
+    <string name="auth_reset_success_body">رمزت عوض شد. با رمز جدید وارد شو.</string>
+    <string name="auth_reset_signin">ورود</string>
+    <string name="auth_reset_expired_title">این لینک منقضی شده</string>
+    <string name="auth_reset_expired_fallback">لینک جدید بخواه. هر لینک فقط یک بار کار می‌کند و زیاد دوام ندارد.</string>
+    <string name="auth_reset_new_link">ارسال لینک جدید</string>
+    <string name="auth_reset_error_blank">رمز جدید را وارد کن</string>
+    <string name="auth_reset_error_weak">حداقل ۶ کاراکتر استفاده کن</string>
+    <string name="auth_reset_error_confirm_blank">یک بار دیگر بنویس</string>
+    <string name="auth_reset_error_mismatch">این دو تا یکی نیستند</string>
+    <string name="auth_reset_error_invalid_code">این لینک نامعتبر است یا قبلاً استفاده شده.</string>
+    <string name="auth_reset_error_generic">رمز به‌روز نشد. دوباره امتحان کن.</string>
+
+    <string name="auth_error_invalid_credentials">ایمیل یا رمز عبور نادرست است</string>
+    <string name="auth_error_user_not_found">حسابی با این ایمیل پیدا نشد</string>
+    <string name="auth_error_different_provider">این ایمیل به روش ورود دیگری وصل است</string>
+    <string name="auth_error_invalid_action_code">این لینک تأیید نامعتبر است یا منقضی شده</string>
+    <string name="auth_error_email_not_verified">قبل از ادامه، ایمیلت را تأیید کن</string>
+    <string name="auth_error_weak_password">حداقل ۶ کاراکتر استفاده کن</string>
+    <string name="auth_error_network">اتصال اینترنتت را چک کن و دوباره امتحان کن</string>
+    <string name="auth_error_too_many">تلاش‌های زیاد. بعداً دوباره امتحان کن</string>
+    <string name="auth_error_unknown">مشکلی پیش آمد. دوباره امتحان کن</string>
+</resources>

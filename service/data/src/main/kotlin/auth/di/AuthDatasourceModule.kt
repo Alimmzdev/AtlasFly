@@ -1,5 +1,7 @@
 package auth.di
 
+import auth.datasource.local.AuthLocalDatasource
+import auth.datasource.local.AuthLocalDatasourceImpl
 import auth.datasource.remote.AuthRemoteDatasource
 import auth.datasource.remote.AuthRemoteDatasourceImpl
 import dagger.Binds
@@ -15,4 +17,9 @@ abstract class AuthDatasourceModule {
     abstract fun bindAuthRemoteDatasource(
         impl: AuthRemoteDatasourceImpl,
     ): AuthRemoteDatasource
+
+    @Binds
+    abstract fun bindAuthLocalDatasource(
+        impl: AuthLocalDatasourceImpl,
+    ): AuthLocalDatasource
 }

@@ -9,7 +9,12 @@ interface AuthRemoteDatasource {
     suspend fun signup(provider: AuthProvider.EmailPassword)
     suspend fun verifyEmail(oobCode: String)
     suspend fun isEmailVerified(): Boolean
+    suspend fun getUnverifiedUserEmail(): String?
+    suspend fun getCurrentSession(): AuthTokens?
     suspend fun resendEmailVerification()
+    suspend fun sendPasswordResetEmail(email: String)
+    suspend fun verifyPasswordResetCode(oobCode: String): String
+    suspend fun confirmPasswordReset(oobCode: String, newPassword: String)
     suspend fun refreshTokens()
     suspend fun logout()
 }

@@ -12,7 +12,7 @@ class AuthLocalDatasourceImpl @Inject constructor(
 
     override suspend fun isAuthorized(): Boolean {
         return authTokensDataStore.data
-            .map { it.accessToken.isNotEmpty() }
+            .map { it.hasVerifiedSession }
             .first()
     }
 
@@ -22,5 +22,9 @@ class AuthLocalDatasourceImpl @Inject constructor(
 
     override suspend fun saveAuthTokens(authTokens: AuthTokens) {
         authTokensDataStore.updateData { authTokens }
+    }
+
+    override suspend fun clearAuthTokens() {
+        authTokensDataStore.updateData { AuthTokens() }
     }
 }
