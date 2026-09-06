@@ -4,9 +4,11 @@
     <string name="language_english">EN</string>
     <string name="language_persian">فا</string>
     <string name="language_switcher_cd">Language</string>
-    <string name="home_screen">Home</string>
-    <string name="flights_screen">Flights</string>
-    <string name="profile_screen">Profile</string>
+    <string name="main_tab_home">Home</string>
+    <string name="main_tab_explore">Explore</string>
+    <string name="main_tab_trips">Trips</string>
+    <string name="main_tab_planner">Planner</string>
+    <string name="main_tab_profile">Profile</string>
     <string name="email_verified_success">Email verified successfully</string>
     <string name="error_invalid_action_code">This verification link is invalid or has expired</string>
     <string name="error_email_not_verified">Email is not verified yet. Check your inbox and try again</string>

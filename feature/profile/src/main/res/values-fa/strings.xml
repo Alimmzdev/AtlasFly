@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_title">پروفایل</string>
+    <string name="profile_saved_places">مکان‌های ذخیره‌شده</string>
+    <string name="profile_saved_trips">سفرهای ذخیره‌شده</string>
+    <string name="profile_preferences">ترجیحات</string>
+    <string name="profile_account_settings">تنظیمات حساب</string>
+    <string name="profile_logout">خروج از حساب</string>
+</resources>

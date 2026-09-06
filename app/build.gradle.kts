@@ -52,9 +52,15 @@ kotlin {
 dependencies {
     //Features
     implementation(projects.feature.auth)
+    implementation(projects.feature.home)
+    implementation(projects.feature.explore)
+    implementation(projects.feature.trips)
+    implementation(projects.feature.planner)
+    implementation(projects.feature.profile)
     implementation(projects.service.domain)
     implementation(projects.service.data)
     implementation(projects.core.designSystem)
+    implementation(projects.core.presentation)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

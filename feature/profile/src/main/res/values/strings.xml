@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_title">Profile</string>
+    <string name="profile_saved_places">Saved Places</string>
+    <string name="profile_saved_trips">Saved Trips</string>
+    <string name="profile_preferences">Preferences</string>
+    <string name="profile_account_settings">Account Settings</string>
+    <string name="profile_logout">Logout</string>
+</resources>

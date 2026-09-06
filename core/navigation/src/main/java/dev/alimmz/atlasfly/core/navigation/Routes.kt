@@ -5,14 +5,46 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface Routes {
 
+    /**
+     * Destinations of the signed-in app shell.
+     *
+     * [TopLevel] entries are the bottom navigation bar tabs; the remaining
+     * entries are detail destinations pushed on top of a tab.
+     */
     @Serializable
-    data object Home : Routes
+    sealed interface Main : Routes {
 
-    @Serializable
-    data object Flights : Routes
+        @Serializable
+        sealed interface TopLevel : Main {
 
-    @Serializable
-    data object Profile : Routes
+            @Serializable
+            data object Home : TopLevel
+
+            @Serializable
+            data object Explore : TopLevel
+
+            @Serializable
+            data object Trips : TopLevel
+
+            @Serializable
+            data object Planner : TopLevel
+
+            @Serializable
+            data object Profile : TopLevel
+        }
+
+        @Serializable
+        data object SavedPlaces : Main
+
+        @Serializable
+        data object SavedTrips : Main
+
+        @Serializable
+        data object Preferences : Main
+
+        @Serializable
+        data object AccountSettings : Main
+    }
 
     @Serializable
     sealed interface Auth : Routes {

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shell_coming_soon">این بخش از اطلس‌فلای در راه است.</string>
+    <string name="shell_notify_me">خبرم کن</string>
+    <string name="shell_notify_requested">وقتی آماده شد خبرت می‌کنیم</string>
+    <string name="shell_back">بازگشت</string>
+</resources>
