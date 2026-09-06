@@ -32,7 +32,14 @@ class AuthRepositoryImpl @Inject constructor(
     override fun login(provider: AuthProvider): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
         authRemoteDatasource.login(provider)
-        emit(AuthResult.Success)
+        if (
+            provider is AuthProvider.EmailPassword &&
+            !authRemoteDatasource.isEmailVerified()
+        ) {
+            emit(AuthResult.Failure(AuthError.EmailNotVerified))
+        } else {
+            emit(AuthResult.Success)
+        }
     }
         .catch { e -> emit(e.toAuthResultFailure()) }
         .flowOn(Dispatchers.IO)

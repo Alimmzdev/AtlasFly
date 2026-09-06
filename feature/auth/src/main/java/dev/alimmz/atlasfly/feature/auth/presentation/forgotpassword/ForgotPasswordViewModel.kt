@@ -6,6 +6,7 @@ import auth.model.AuthError
 import auth.model.AuthResult
 import auth.usecase.SendPasswordResetEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.alimmz.atlasfly.feature.auth.presentation.logging.UiLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,13 +23,19 @@ class ForgotPasswordViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ForgotPasswordUiState())
     val uiState: StateFlow<ForgotPasswordUiState> = _uiState.asStateFlow()
 
+    init {
+        UiLogger.observeState(viewModelScope, "ForgotPasswordViewModel", uiState)
+    }
+
     fun seedEmail(email: String) {
+        UiLogger.logEvent("ForgotPasswordViewModel.Event", "SeedEmail(email=$email)")
         if (_uiState.value.email.isBlank() && email.isNotBlank()) {
             _uiState.update { it.copy(email = email.trim()) }
         }
     }
 
     fun onIntent(intent: ForgotPasswordUiIntent) {
+        UiLogger.logEvent("ForgotPasswordViewModel.Intent", intent)
         when (intent) {
             is ForgotPasswordUiIntent.EmailChanged -> _uiState.update {
                 it.copy(email = intent.value, emailError = null, error = null)

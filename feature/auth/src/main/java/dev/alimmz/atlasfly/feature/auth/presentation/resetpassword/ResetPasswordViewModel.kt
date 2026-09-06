@@ -8,6 +8,7 @@ import auth.model.ResetCodeResult
 import auth.usecase.ConfirmPasswordResetUseCase
 import auth.usecase.VerifyPasswordResetCodeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.alimmz.atlasfly.feature.auth.presentation.logging.UiLogger
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +34,12 @@ class ResetPasswordViewModel @Inject constructor(
     private var oobCode: String = ""
     private var started: Boolean = false
 
+    init {
+        UiLogger.observeState(viewModelScope, "ResetPasswordViewModel", uiState)
+    }
+
     fun start(oobCode: String) {
+        UiLogger.logEvent("ResetPasswordViewModel.Event", "Start(oobCode=$oobCode)")
         if (started) return
         started = true
         this.oobCode = oobCode
@@ -59,6 +65,7 @@ class ResetPasswordViewModel @Inject constructor(
     }
 
     fun onIntent(intent: ResetPasswordUiIntent) {
+        UiLogger.logEvent("ResetPasswordViewModel.Intent", intent)
         when (intent) {
             is ResetPasswordUiIntent.PasswordChanged -> _uiState.update {
                 it.copy(password = intent.value, passwordError = null, error = null)
@@ -96,7 +103,7 @@ class ResetPasswordViewModel @Inject constructor(
                     }
                     is AuthResult.Success -> {
                         _uiState.update { it.copy(isLoading = false, updated = true) }
-                        _events.send(ResetPasswordEvent.PasswordUpdated)
+                        sendEvent(ResetPasswordEvent.PasswordUpdated)
                     }
                     is AuthResult.Failure -> _uiState.update {
                         it.copy(
@@ -109,5 +116,10 @@ class ResetPasswordViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun sendEvent(event: ResetPasswordEvent) {
+        UiLogger.logEvent("ResetPasswordViewModel.Event", event)
+        _events.send(event)
     }
 }

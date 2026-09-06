@@ -79,8 +79,8 @@ fun LoginScreen(
             when (it) {
                 LoginEvent.NavigateHome -> onNavigateToHomeScreen()
                 LoginEvent.ShowSignUpDialog -> showDialog = true
-                LoginEvent.NavigateSignupEmailVerification -> onNavigateToSignUpEmailVerification(
-                    uiState.email
+                is LoginEvent.NavigateSignupEmailVerification -> onNavigateToSignUpEmailVerification(
+                    it.email
                 )
                 is LoginEvent.NavigateForgotPassword -> onNavigateToForgotPassword(it.email)
             }

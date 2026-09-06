@@ -27,6 +27,8 @@
 
     <string name="auth_check_inbox">Check your inbox</string>
     <string name="auth_verify_body">We sent a link to confirm it\'s you. Open it, then come back here.</string>
+    <string name="auth_verify_open_email">Open email app</string>
+    <string name="auth_no_email_app">No email app is installed</string>
     <string name="auth_verify_confirmed">I confirmed it</string>
     <string name="auth_verify_resend">Didn\'t get it? Send again</string>
     <string name="auth_verify_email_sent">Verification email sent</string>

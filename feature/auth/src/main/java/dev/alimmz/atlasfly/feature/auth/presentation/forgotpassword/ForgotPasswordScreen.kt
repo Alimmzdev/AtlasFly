@@ -1,7 +1,5 @@
 package dev.alimmz.atlasfly.feature.auth.presentation.forgotpassword
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -31,6 +29,7 @@ import dev.alimmz.atlasfly.feature.auth.presentation.components.AuthMailMark
 import dev.alimmz.atlasfly.feature.auth.presentation.components.AuthScreenScaffold
 import dev.alimmz.atlasfly.feature.auth.presentation.components.EmailField
 import dev.alimmz.atlasfly.feature.auth.presentation.components.SignInButton
+import dev.alimmz.atlasfly.feature.auth.presentation.helpers.openEmailApp
 import dev.alimmz.atlasfly.feature.auth.presentation.R
 
 @Composable
@@ -210,26 +209,6 @@ private fun AuthError.toForgotPasswordMessage(): String = stringResource(
         else -> R.string.auth_forgot_error_generic
     }
 )
-
-private fun openEmailApp(context: android.content.Context) {
-    val inbox = Intent(Intent.ACTION_MAIN).apply {
-        addCategory(Intent.CATEGORY_APP_EMAIL)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-    try {
-        context.startActivity(inbox)
-    } catch (_: ActivityNotFoundException) {
-        val chooser = Intent(Intent.ACTION_SENDTO).apply {
-            data = android.net.Uri.parse("mailto:")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        try {
-            context.startActivity(chooser)
-        } catch (_: ActivityNotFoundException) {
-            Unit
-        }
-    }
-}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

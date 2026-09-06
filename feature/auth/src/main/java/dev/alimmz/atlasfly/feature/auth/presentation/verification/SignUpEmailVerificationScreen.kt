@@ -2,12 +2,9 @@ package dev.alimmz.atlasfly.feature.auth.presentation.verification
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,6 +26,8 @@ import dev.alimmz.atlasfly.core.designsystem.theme.AtlasFlyTheme
 import dev.alimmz.atlasfly.feature.auth.presentation.components.AuthBrandRow
 import dev.alimmz.atlasfly.feature.auth.presentation.components.AuthMailMark
 import dev.alimmz.atlasfly.feature.auth.presentation.components.AuthScreenScaffold
+import dev.alimmz.atlasfly.feature.auth.presentation.components.SignInButton
+import dev.alimmz.atlasfly.feature.auth.presentation.helpers.openEmailApp
 import dev.alimmz.atlasfly.feature.auth.presentation.R
 
 @Composable
@@ -38,6 +38,7 @@ fun SignUpEmailVerificationScreen(
     viewModel: SignUpEmailVerificationViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -48,6 +49,7 @@ fun SignUpEmailVerificationScreen(
     SignUpEmailVerificationContent(
         email = email,
         uiState = uiState,
+        onOpenEmail = { openEmailApp(context) },
         onCheck = { viewModel.onIntent(SignUpEmailVerificationUiIntent.CheckVerificationClicked) },
         onResend = { viewModel.onIntent(SignUpEmailVerificationUiIntent.ResendEmailClicked) },
         modifier = modifier,
@@ -58,6 +60,7 @@ fun SignUpEmailVerificationScreen(
 private fun SignUpEmailVerificationContent(
     email: String,
     uiState: SignUpEmailVerificationUiState,
+    onOpenEmail: () -> Unit,
     onCheck: () -> Unit,
     onResend: () -> Unit,
     modifier: Modifier = Modifier,
@@ -127,20 +130,23 @@ private fun SignUpEmailVerificationContent(
                 color = MaterialTheme.colorScheme.primary,
             )
         } else {
-            Button(
+            SignInButton(
+                isEnable = true,
+                isLoading = false,
+                text = stringResource(R.string.auth_verify_open_email),
+                onClick = onOpenEmail,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            TextButton(
                 onClick = onCheck,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp),
-                shape = MaterialTheme.shapes.medium,
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
+                modifier = Modifier.align(Alignment.Start),
             ) {
                 Text(
                     text = stringResource(R.string.auth_verify_confirmed),
                     style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Spacer(modifier = Modifier.height(4.dp))
             TextButton(
                 onClick = onResend,
                 modifier = Modifier.align(Alignment.Start),
@@ -162,6 +168,7 @@ private fun SignUpEmailVerificationPreview() {
         SignUpEmailVerificationContent(
             email = "maya@atlasfly.app",
             uiState = SignUpEmailVerificationUiState(),
+            onOpenEmail = {},
             onCheck = {},
             onResend = {},
         )

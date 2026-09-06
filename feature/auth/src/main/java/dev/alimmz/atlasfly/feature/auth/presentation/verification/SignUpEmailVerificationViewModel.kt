@@ -7,6 +7,7 @@ import auth.model.AuthResult
 import auth.usecase.IsEmailVerifiedUseCase
 import auth.usecase.ResendEmailVerificationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.alimmz.atlasfly.feature.auth.presentation.logging.UiLogger
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +31,12 @@ class SignUpEmailVerificationViewModel @Inject constructor(
     private val _events = Channel<SignUpEmailVerificationEvent>()
     val events = _events.receiveAsFlow()
 
+    init {
+        UiLogger.observeState(viewModelScope, "SignUpEmailVerificationViewModel", uiState)
+    }
+
     fun onIntent(intent: SignUpEmailVerificationUiIntent) {
+        UiLogger.logEvent("SignUpEmailVerificationViewModel.Intent", intent)
         when (intent) {
             SignUpEmailVerificationUiIntent.ResendEmailClicked -> resendVerificationEmail()
             SignUpEmailVerificationUiIntent.CheckVerificationClicked -> checkVerificationStatus()
@@ -70,7 +76,7 @@ class SignUpEmailVerificationViewModel @Inject constructor(
             val isVerified: Boolean = isEmailVerifiedUseCase.invoke()
             if (isVerified) {
                 _uiState.update { it.copy(isLoading = false) }
-                _events.send(SignUpEmailVerificationEvent.NavigateHome)
+                sendEvent(SignUpEmailVerificationEvent.NavigateHome)
             } else {
                 _uiState.update {
                     it.copy(
@@ -89,5 +95,10 @@ class SignUpEmailVerificationViewModel @Inject constructor(
             AuthError.NetworkError -> R.string.auth_error_network
             else -> R.string.auth_error_unknown
         }
+    }
+
+    private suspend fun sendEvent(event: SignUpEmailVerificationEvent) {
+        UiLogger.logEvent("SignUpEmailVerificationViewModel.Event", event)
+        _events.send(event)
     }
 }

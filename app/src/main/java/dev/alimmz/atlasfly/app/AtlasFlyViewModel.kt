@@ -13,8 +13,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import dev.alimmz.atlasfly.app.deeplink.EmailVerificationDeepLink
-import dev.alimmz.atlasfly.app.deeplink.EmailVerificationDeepLinkParser
+import dev.alimmz.atlasfly.R
+import dev.alimmz.atlasfly.app.logging.UiLogger
+import dev.alimmz.atlasfly.app.deeplink.AuthDeepLink
+import dev.alimmz.atlasfly.app.deeplink.AuthDeepLinkParser
 import dev.alimmz.atlasfly.core.navigation.Routes
 import javax.inject.Inject
 
@@ -29,10 +31,12 @@ class AtlasFlyViewModel @Inject constructor(
     val uiState: StateFlow<AtlasFlyUiState> = _uiState.asStateFlow()
 
     init {
+        UiLogger.observeState(viewModelScope, "AtlasFlyViewModel", uiState)
         loadData()
     }
 
     fun onEvent(event: AtlasFlyEvent) {
+        UiLogger.logEvent("AtlasFlyViewModel.Event", event)
         when (event) {
             AtlasFlyEvent.Refresh -> loadData()
             AtlasFlyEvent.Logout -> logout()

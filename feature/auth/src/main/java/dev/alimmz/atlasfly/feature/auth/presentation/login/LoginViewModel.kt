@@ -14,6 +14,7 @@ import auth.usecase.LogoutUseCase
 import auth.usecase.RefreshTokensUseCase
 import auth.usecase.SignupUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.alimmz.atlasfly.feature.auth.presentation.logging.UiLogger
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,10 +43,12 @@ class LoginViewModel @Inject constructor(
     private var loginJob: Job? = null
 
     init {
+        UiLogger.observeState(viewModelScope, "LoginViewModel", uiState)
         checkAuthorized()
     }
 
     fun onIntent(intent: LoginUiIntent) {
+        UiLogger.logEvent("LoginViewModel.Intent", intent)
         when (intent) {
             is LoginUiIntent.EmailLogin ->
                 login(provider = EmailPassword(intent.email, intent.password))
@@ -71,7 +74,7 @@ class LoginViewModel @Inject constructor(
             is LoginUiIntent.PasswordChanged -> _uiState.update { it.copy(password = intent.value) }
             LoginUiIntent.ForgotPasswordClicked -> {
                 viewModelScope.launch {
-                    _events.send(LoginEvent.NavigateForgotPassword(_uiState.value.email))
+                    sendEvent(LoginEvent.NavigateForgotPassword(_uiState.value.email))
                 }
             }
             LoginUiIntent.NavigateToSignUp -> {}
@@ -107,7 +110,7 @@ class LoginViewModel @Inject constructor(
                                 isLoggedIn = true,
                             )
                         }
-                        _events.send(LoginEvent.NavigateHome)
+                        sendEvent(LoginEvent.NavigateHome)
                     }
 
                     is AuthResult.Failure -> {
@@ -116,12 +119,24 @@ class LoginViewModel @Inject constructor(
                                 isLoading = false,
                                 loadingProvider = null,
                                 error = result.error.takeIf { e ->
-                                    e !is AuthError.Cancelled && e !is AuthError.UserNotFound
+                                    e !is AuthError.Cancelled &&
+                                        e !is AuthError.UserNotFound &&
+                                        e !is AuthError.EmailNotVerified
                                 },
                             )
                         }
-                        if (result.error is AuthError.InvalidCredentials) {
-                            _events.send(LoginEvent.ShowSignUpDialog)
+                        when (result.error) {
+                            AuthError.InvalidCredentials ->
+                                sendEvent(LoginEvent.ShowSignUpDialog)
+
+                            AuthError.EmailNotVerified ->
+                                if (provider is EmailPassword) {
+                                    sendEvent(
+                                        LoginEvent.NavigateSignupEmailVerification(provider.email)
+                                    )
+                                }
+
+                            else -> Unit
                         }
                     }
                 }
@@ -147,10 +162,12 @@ class LoginViewModel @Inject constructor(
                                 it.copy(
                                     isLoading = false,
                                     loadingProvider = null,
-                                    isLoggedIn = true,
+                                    isLoggedIn = false,
                                 )
                             }
-                            _events.send(LoginEvent.NavigateSignupEmailVerification)
+                            sendEvent(
+                                LoginEvent.NavigateSignupEmailVerification(provider.email)
+                            )
                         }
 
                         is AuthResult.Failure -> {
@@ -164,7 +181,7 @@ class LoginViewModel @Inject constructor(
                                 )
                             }
                             if (result.error is AuthError.InvalidCredentials) {
-                                _events.send(LoginEvent.ShowSignUpDialog)
+                                sendEvent(LoginEvent.ShowSignUpDialog)
                             }
                         }
                     }
@@ -191,5 +208,10 @@ class LoginViewModel @Inject constructor(
             logoutUseCase()
             _uiState.update { it.copy(isLoggedIn = false) }
         }
+    }
+
+    private suspend fun sendEvent(event: LoginEvent) {
+        UiLogger.logEvent("LoginViewModel.Event", event)
+        _events.send(event)
     }
 }
