@@ -60,7 +60,7 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 
 | Area | What to look at |
 |---|---|
-| **Architecture** | Multi-module Clean Architecture: `app` → `feature` → `service` → `core` |
+| **Architecture** | 17-module Clean Architecture organized across `app`, `feature`, `service`, and `core` |
 | **UI pattern** | Compose + MVI (`UiState` / `UiIntent` / `Event`) in ViewModels |
 | **Auth** | Email/password, Google, GitHub via Firebase Auth |
 | **Security** | Auth tokens encrypted with Google Tink + DataStore |
@@ -75,9 +75,9 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 
 ### Implemented
 
-- [x] Multi-module project scaffold (`app`, `core`, `feature`, `service`)
+- [x] 17-module project scaffold (`app`, `core`, `feature`, `service`)
 - [x] Jetpack Compose UI with Material 3
-- [x] Splash screen & app shell with auth gate
+- [x] Splash screen, auth gate, and main app shell with bottom navigation
 - [x] Email/password sign-up and sign-in
 - [x] Google Sign-In (Credential Manager)
 - [x] GitHub OAuth login
@@ -90,9 +90,10 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 
 ### Roadmap
 
-- [ ] Flight search & results
-- [ ] Travel itinerary planning
-- [ ] User profile & settings
+- [ ] Explore destinations and flight discovery
+- [ ] Trip management and itinerary planning
+- [ ] Planner workflows
+- [ ] User profile, saved items, and settings
 - [ ] Offline caching strategy
 - [ ] Unit & UI test coverage expansion
 - [ ] CI pipeline (build, lint, test)
@@ -101,22 +102,13 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 
 ## Architecture
 
-AtlasFly follows **Clean Architecture** with strict module boundaries and a **feature-first** organization.
+AtlasFly follows **Clean Architecture** with explicit module boundaries and a **feature-first** organization. The `app` module assembles the application, feature modules own user-facing destinations, service modules implement product-level domain and data concerns, and core modules provide reusable foundations.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                         :app                               │
-│   Compose UI · Navigation · Deep links · Hilt entry point  │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-         ┌─────────────────┼─────────────────┐
-         ▼                 ▼                 ▼
-   ┌───────────┐    ┌────────────┐    ┌─────────────┐
-   │ :feature  │    │  :service  │    │    :core    │
-   │ auth      │    │  domain    │    │  network    │
-   │ home      │    │  data      │    │  local      │
-   │ search …  │    │ (Firebase) │    │  navigation │
-   └───────────┘    └────────────┘    └─────────────┘
+```text
+:app
+├── :feature:*     # Screens and destination-specific presentation
+├── :service:*     # Application domain contracts and data implementations
+└── :core:*        # Shared UI, architecture, navigation, network, and storage
 ```
 
 ### Data flow (MVI-style)
@@ -129,26 +121,30 @@ User action → UiIntent → ViewModel → UseCase → Repository → DataSource
 
 ### Module map
 
-```
+```text
 AtlasFly/
-├── app/                    # Application entry, theme, navigation shell
+├── app/                    # Application entry point, app shell, and feature assembly
 ├── core/
-│   ├── design-system/      # Shared UI tokens & components
-│   ├── presentation/       # Base presentation utilities
-│   ├── navigation/         # Type-safe Routes (kotlinx.serialization)
-│   ├── network/            # Ktor client, Hilt NetworkModule, Chucker
-│   └── local/              # Encrypted DataStore, Tink CryptoManager
+│   ├── data/               # Shared data-layer abstractions
+│   ├── design-system/      # Reusable Compose theme, tokens, and components
+│   ├── domain/             # Shared domain-layer abstractions
+│   ├── lib/                # Framework-independent shared Kotlin utilities
+│   ├── local/              # Encrypted DataStore and Tink-based local storage
+│   ├── navigation/         # Serializable, type-safe Navigation 3 routes
+│   ├── network/            # Ktor client, serialization, logging, and Chucker
+│   └── presentation/       # Shared Compose and ViewModel utilities
 ├── feature/
-│   ├── auth/               # Login, signup, email verification UI
-│   ├── home/               # Home dashboard (scaffold)
-│   ├── search/             # Flight search (scaffold)
-│   ├── travel/             # Travel planning (scaffold)
-│   ├── flight/             # Flight details (scaffold)
-│   └── profile/            # User profile (scaffold)
+│   ├── auth/               # Login, signup, OAuth, and email verification
+│   ├── explore/            # Destination and travel discovery UI
+│   ├── home/               # Home destination UI
+│   ├── planner/            # Trip-planning UI
+│   ├── profile/            # Profile and settings UI
+│   └── trips/              # Saved and active trips UI
 ├── service/
-│   ├── domain/             # Auth use cases, models, repository contracts
-│   └── data/               # Firebase Auth, local/remote data sources
-└── gradle/libs.versions.toml
+│   ├── domain/             # Use cases, models, and repository contracts
+│   └── data/               # Firebase Auth and persistence implementations
+├── gradle/libs.versions.toml
+└── settings.gradle.kts     # Canonical module registry
 ```
 
 ---
