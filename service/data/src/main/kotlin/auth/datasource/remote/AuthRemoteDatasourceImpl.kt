@@ -9,8 +9,9 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GithubAuthProvider
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
-import dev.alimmz.atlasfly.core.local.model.AuthTokens
+import dev.alimmz.atlasfly.core.local.model.AuthSessionMetadata
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 class AuthRemoteDatasourceImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
@@ -24,6 +25,8 @@ class AuthRemoteDatasourceImpl @Inject constructor(
         } catch (_: FirebaseAuthInvalidUserException) {
             firebaseAuth.signOut()
             false
+        } catch (error: CancellationException) {
+            throw error
         } catch (_: Exception) {
             user.isEmailVerified
         }
@@ -87,27 +90,20 @@ class AuthRemoteDatasourceImpl @Inject constructor(
         } catch (_: FirebaseAuthInvalidUserException) {
             firebaseAuth.signOut()
             null
+        } catch (error: CancellationException) {
+            throw error
         } catch (_: Exception) {
             if (user.isEmailVerified) null else user.email
         }
     }
 
-    override suspend fun getCurrentSession(): AuthTokens? {
+    override suspend fun getCurrentSession(): AuthSessionMetadata? {
         val user = firebaseAuth.currentUser ?: return null
-        return try {
-            val tokenResult = user.getIdToken(false).await()
-            AuthTokens(
-                accessToken = tokenResult.token.orEmpty(),
-                refreshToken = "",
-                expiresAt = tokenResult.expirationTimestamp,
-                uid = user.uid,
-                email = user.email.orEmpty(),
-                emailVerified = user.isEmailVerified,
-            )
-        } catch (e: Exception) {
-            logFirebaseFailure("getCurrentSession", e)
-            null
-        }
+        return AuthSessionMetadata(
+            uid = user.uid,
+            email = user.email.orEmpty(),
+            emailVerified = user.isEmailVerified,
+        )
     }
 
     override suspend fun resendEmailVerification() {

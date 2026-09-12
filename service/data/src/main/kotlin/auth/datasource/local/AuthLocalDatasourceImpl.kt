@@ -1,30 +1,18 @@
 package auth.datasource.local
 
 import androidx.datastore.core.DataStore
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import dev.alimmz.atlasfly.core.local.model.AuthTokens
+import dev.alimmz.atlasfly.core.local.model.AuthSessionMetadata
 import javax.inject.Inject
 
 class AuthLocalDatasourceImpl @Inject constructor(
-    private val authTokensDataStore: DataStore<AuthTokens>,
+    private val authSessionMetadataDataStore: DataStore<AuthSessionMetadata>,
 ) : AuthLocalDatasource {
 
-    override suspend fun isAuthorized(): Boolean {
-        return authTokensDataStore.data
-            .map { it.hasVerifiedSession }
-            .first()
+    override suspend fun saveSessionMetadata(metadata: AuthSessionMetadata) {
+        authSessionMetadataDataStore.updateData { metadata }
     }
 
-    override suspend fun getAuthTokens(): AuthTokens {
-        return authTokensDataStore.data.first()
-    }
-
-    override suspend fun saveAuthTokens(authTokens: AuthTokens) {
-        authTokensDataStore.updateData { authTokens }
-    }
-
-    override suspend fun clearAuthTokens() {
-        authTokensDataStore.updateData { AuthTokens() }
+    override suspend fun clearSessionMetadata() {
+        authSessionMetadataDataStore.updateData { AuthSessionMetadata() }
     }
 }

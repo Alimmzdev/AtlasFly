@@ -10,8 +10,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.alimmz.atlasfly.core.local.crypto.CryptoManager
-import dev.alimmz.atlasfly.core.local.model.AuthTokens
-import dev.alimmz.atlasfly.core.local.serializer.AuthTokensSerializer
+import dev.alimmz.atlasfly.core.local.model.AuthSessionMetadata
+import dev.alimmz.atlasfly.core.local.serializer.AuthSessionMetadataSerializer
 import javax.inject.Singleton
 
 @Module
@@ -20,12 +20,12 @@ object LocalModule {
 
     @Provides
     @Singleton
-    fun provideAuthTokensDataStore(
+    fun provideAuthSessionMetadataDataStore(
         @ApplicationContext context: Context,
         cryptoManager: CryptoManager
-    ): DataStore<AuthTokens> {
+    ): DataStore<AuthSessionMetadata> {
         return DataStoreFactory.create(
-            serializer = AuthTokensSerializer(cryptoManager.aead),
+            serializer = AuthSessionMetadataSerializer(cryptoManager.aead),
             produceFile = { context.dataStoreFile("auth_tokens.pb") }
         )
     }

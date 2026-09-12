@@ -29,9 +29,12 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(projects.core.local)
+    implementation(projects.core.network)
     implementation(projects.service.domain)
 
     implementation(libs.datastore)
+    implementation(libs.ktor.client.core)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

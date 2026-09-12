@@ -4,10 +4,13 @@ import auth.datasource.local.AuthLocalDatasource
 import auth.datasource.local.AuthLocalDatasourceImpl
 import auth.datasource.remote.AuthRemoteDatasource
 import auth.datasource.remote.AuthRemoteDatasourceImpl
+import auth.token.FirebaseAuthTokenProvider
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.alimmz.atlasfly.core.network.AuthTokenProvider
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -22,4 +25,10 @@ abstract class AuthDatasourceModule {
     abstract fun bindAuthLocalDatasource(
         impl: AuthLocalDatasourceImpl,
     ): AuthLocalDatasource
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthTokenProvider(
+        impl: FirebaseAuthTokenProvider,
+    ): AuthTokenProvider
 }

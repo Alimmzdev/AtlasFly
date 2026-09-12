@@ -1,10 +1,8 @@
 package auth.datasource.local
 
-import dev.alimmz.atlasfly.core.local.model.AuthTokens
+import dev.alimmz.atlasfly.core.local.model.AuthSessionMetadata
 
 interface AuthLocalDatasource {
-    suspend fun isAuthorized(): Boolean
-    suspend fun getAuthTokens(): AuthTokens
-    suspend fun saveAuthTokens(authTokens: AuthTokens)
-    suspend fun clearAuthTokens()
+    suspend fun saveSessionMetadata(metadata: AuthSessionMetadata)
+    suspend fun clearSessionMetadata()
 }
