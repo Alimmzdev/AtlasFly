@@ -1,6 +1,12 @@
 package dev.alimmz.atlasfly.app.main
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import dev.alimmz.atlasfly.app.LanguageSwitcher
 import dev.alimmz.atlasfly.core.navigation.Routes
 import dev.alimmz.atlasfly.core.presentation.shell.MainSharedViewModel
@@ -25,6 +31,12 @@ fun MainDestination(
     onBack: () -> Unit,
     onLogout: () -> Unit,
 ) {
+    var selectedProfileImageUri by rememberSaveable { mutableStateOf<String?>(null) }
+    val profileImagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { selectedProfileImageUri = it?.toString() },
+    )
+
     when (route) {
         Routes.Main.TopLevel.Home -> HomeScreen(sharedViewModel = sharedViewModel)
 
@@ -51,6 +63,9 @@ fun MainDestination(
         Routes.Main.AccountSettings -> AccountSettingsScreen(
             onBack = onBack,
             languageSwitcher = { LanguageSwitcher(expanded = true) },
+            selectedImageUri = selectedProfileImageUri,
+            onSelectImage = { profileImagePicker.launch("image/*") },
+            onImageConsumed = { selectedProfileImageUri = null },
         )
     }
 }
