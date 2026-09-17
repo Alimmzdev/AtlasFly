@@ -28,12 +28,11 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     override suspend fun isAuthorized(): Boolean {
-        if (authLocalDatasource.isAuthorized()) {
-            return true
-        }
         val remoteAuthorized = authRemoteDatasource.isAuthorized()
         if (remoteAuthorized) {
             persistCurrentSession()
+        } else {
+            authLocalDatasource.clearSessionMetadata()
         }
         return remoteAuthorized
     }
@@ -133,20 +132,22 @@ class AuthRepositoryImpl @Inject constructor(
         .flowOn(Dispatchers.IO)
 
     override suspend fun logout() {
-        authLocalDatasource.clearAuthTokens()
+        authLocalDatasource.clearSessionMetadata()
         authRemoteDatasource.logout()
     }
 
     private suspend fun persistCurrentSession() {
         val session = authRemoteDatasource.getCurrentSession() ?: return
         if (session.hasVerifiedSession) {
-            authLocalDatasource.saveAuthTokens(session)
+            authLocalDatasource.saveSessionMetadata(session)
         }
     }
 }
 
-private fun Throwable.toAuthResultFailure(): AuthResult.Failure =
-    AuthResult.Failure(toAuthError())
+private fun Throwable.toAuthResultFailure(): AuthResult.Failure {
+    if (this is CancellationException) throw this
+    return AuthResult.Failure(toAuthError())
+}
 
 private fun Throwable.toAuthError(): AuthError = when (this) {
     is FirebaseAuthWeakPasswordException -> AuthError.WeakPassword
@@ -155,7 +156,6 @@ private fun Throwable.toAuthError(): AuthError = when (this) {
     is FirebaseAuthUserCollisionException -> AuthError.AccountExistsDifferentProvider
     is FirebaseAuthActionCodeException -> AuthError.InvalidActionCode
     is FirebaseTooManyRequestsException -> AuthError.TooManyAttempts
-    is CancellationException -> AuthError.Cancelled
     is IOException -> AuthError.NetworkError
     else -> AuthError.Unknown(cause = this)
 }
