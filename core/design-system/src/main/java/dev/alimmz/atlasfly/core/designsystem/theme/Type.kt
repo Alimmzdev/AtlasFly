@@ -12,39 +12,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import dev.alimmz.atlasfly.core.designsystem.R
 
-private val Fraunces = FontFamily(
-    Font(
-        resId = R.font.fraunces,
-        weight = FontWeight.Normal,
-        variationSettings = FontVariation.Settings(
-            FontVariation.weight(400),
-            FontVariation.Setting("opsz", 72f),
-            FontVariation.Setting("SOFT", 40f),
-            FontVariation.Setting("WONK", 0.35f),
-        ),
-    ),
-    Font(
-        resId = R.font.fraunces,
-        weight = FontWeight.Medium,
-        variationSettings = FontVariation.Settings(
-            FontVariation.weight(500),
-            FontVariation.Setting("opsz", 72f),
-            FontVariation.Setting("SOFT", 35f),
-            FontVariation.Setting("WONK", 0.4f),
-        ),
-    ),
-    Font(
-        resId = R.font.fraunces,
-        weight = FontWeight.SemiBold,
-        variationSettings = FontVariation.Settings(
-            FontVariation.weight(600),
-            FontVariation.Setting("opsz", 72f),
-            FontVariation.Setting("SOFT", 25f),
-            FontVariation.Setting("WONK", 0.5f),
-        ),
-    ),
-)
-
 private val Karla = FontFamily(
     Font(
         resId = R.font.karla,
@@ -70,28 +37,28 @@ private val Karla = FontFamily(
 
 val AtlasFlyTypography = Typography(
     displayLarge = TextStyle(
-        fontFamily = Fraunces,
+        fontFamily = Karla,
         fontWeight = FontWeight.SemiBold,
         fontSize = 44.sp,
         lineHeight = 48.sp,
         letterSpacing = (-0.6).sp,
     ),
     headlineLarge = TextStyle(
-        fontFamily = Fraunces,
+        fontFamily = Karla,
         fontWeight = FontWeight.SemiBold,
         fontSize = 40.sp,
         lineHeight = 44.sp,
         letterSpacing = (-0.5).sp,
     ),
     headlineMedium = TextStyle(
-        fontFamily = Fraunces,
+        fontFamily = Karla,
         fontWeight = FontWeight.SemiBold,
         fontSize = 28.sp,
         lineHeight = 34.sp,
         letterSpacing = (-0.2).sp,
     ),
     headlineSmall = TextStyle(
-        fontFamily = Fraunces,
+        fontFamily = Karla,
         fontWeight = FontWeight.Medium,
         fontSize = 24.sp,
         lineHeight = 30.sp,

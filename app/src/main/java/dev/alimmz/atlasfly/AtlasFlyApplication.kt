@@ -8,14 +8,17 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import dagger.hilt.android.HiltAndroidApp
+import dev.alimmz.atlasfly.core.network.AtlasFlyHttpClient
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
+import javax.inject.Inject
 
 @HiltAndroidApp
 class AtlasFlyApplication : Application(), SingletonImageLoader.Factory {
-    override fun newImageLoader(context: Context): ImageLoader {
-        val httpClient = HttpClient(OkHttp)
+    @Inject
+    @AtlasFlyHttpClient
+    lateinit var httpClient: HttpClient
 
+    override fun newImageLoader(context: Context): ImageLoader {
         return ImageLoader.Builder(context)
             .crossfade(true)
             .components {

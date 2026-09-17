@@ -52,9 +52,15 @@ kotlin {
 dependencies {
     //Features
     implementation(projects.feature.auth)
+    implementation(projects.feature.home)
+    implementation(projects.feature.explore)
+    implementation(projects.feature.trips)
+    implementation(projects.feature.planner)
+    implementation(projects.feature.profile)
     implementation(projects.service.domain)
     implementation(projects.service.data)
     implementation(projects.core.designSystem)
+    implementation(projects.core.presentation)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
@@ -81,6 +87,7 @@ dependencies {
 
     //Navigation
     implementation(projects.core.navigation)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.nav3.ui)
 
     //Coil image loader
@@ -93,6 +100,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    debugImplementation(libs.chucker.full)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
     coreLibraryDesugaring(libs.desugar.jdk.libs)

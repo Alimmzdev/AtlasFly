@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shell_coming_soon">This part of AtlasFly is on the way.</string>
+    <string name="shell_notify_me">Notify me</string>
+    <string name="shell_notify_requested">We\'ll let you know when it\'s ready</string>
+    <string name="shell_back">Back</string>
+</resources>

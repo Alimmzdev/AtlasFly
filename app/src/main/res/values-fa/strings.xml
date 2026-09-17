@@ -4,13 +4,19 @@
     <string name="language_english">EN</string>
     <string name="language_persian">فا</string>
     <string name="language_switcher_cd">زبان</string>
-    <string name="home_screen">خانه</string>
-    <string name="flights_screen">پروازها</string>
-    <string name="profile_screen">پروفایل</string>
+    <string name="main_tab_home">خانه</string>
+    <string name="main_tab_explore">کاوش</string>
+    <string name="main_tab_trips">سفرها</string>
+    <string name="main_tab_planner">برنامه‌ریز</string>
+    <string name="main_tab_profile">پروفایل</string>
     <string name="email_verified_success">ایمیل با موفقیت تأیید شد</string>
     <string name="error_invalid_action_code">این لینک تأیید نامعتبر است یا منقضی شده</string>
     <string name="error_email_not_verified">ایمیل هنوز تأیید نشده. اینباکس‌تو چک کن و دوباره امتحان کن</string>
     <string name="error_network">خطای شبکه. دوباره امتحان کن</string>
     <string name="error_too_many">تلاش‌های زیاد. بعداً دوباره امتحان کن</string>
     <string name="error_unknown">مشکلی پیش آمد. دوباره امتحان کن</string>
+    <string name="language_title">زبان برنامه</string>
+    <string name="language_hint">زبان برنامه را انتخاب کن. تغییرات به‌صورت خودکار ذخیره می‌شوند.</string>
+    <string name="language_english_name">انگلیسی</string>
+    <string name="language_persian_name">فارسی</string>
 </resources>

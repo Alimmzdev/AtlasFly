@@ -18,7 +18,7 @@ AtlasFly is not a tutorial clone. It is a **deliberately structured Android appl
 
 - **Modular boundaries** that scale with team size and feature velocity
 - **Unidirectional data flow** (MVI-style) for predictable UI state
-- **Security-first auth** with encrypted local storage and OAuth providers
+- **Security-first auth** with Firebase-managed sessions, encrypted metadata, and OAuth providers
 - **Modern Android stack** aligned with what EU product companies expect in 2026
 
 If you are a recruiter, hiring manager, or fellow Android developer, this repository is meant to answer one question quickly: *Can this engineer design, implement, and document a real Android product?*
@@ -60,7 +60,7 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 
 | Area | What to look at |
 |---|---|
-| **Architecture** | Multi-module Clean Architecture: `app` → `feature` → `service` → `core` |
+| **Architecture** | 17-module Clean Architecture organized across `app`, `feature`, `service`, and `core` |
 | **UI pattern** | Compose + MVI (`UiState` / `UiIntent` / `Event`) in ViewModels |
 | **Auth** | Email/password, Google, GitHub via Supabase Auth |
 | **Security** | Auth tokens encrypted with Google Tink + DataStore |
@@ -75,9 +75,9 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 
 ### Implemented
 
-- [x] Multi-module project scaffold (`app`, `core`, `feature`, `service`)
+- [x] 17-module project scaffold (`app`, `core`, `feature`, `service`)
 - [x] Jetpack Compose UI with Material 3
-- [x] Splash screen & app shell with auth gate
+- [x] Splash screen, auth gate, and main app shell with bottom navigation
 - [x] Email/password sign-up and sign-in
 - [x] Google OAuth through Supabase Auth
 - [x] GitHub OAuth login
@@ -90,9 +90,9 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 
 ### Roadmap
 
-- [ ] Flight search & results
-- [ ] Travel itinerary planning
-- [ ] User profile & settings
+- [ ] Explore destinations and flight discovery
+- [ ] Trip management and itinerary planning
+- [ ] Planner workflows
 - [ ] Offline caching strategy
 - [ ] Unit & UI test coverage expansion
 - [ ] CI pipeline (build, lint, test)
@@ -101,7 +101,7 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 
 ## Architecture
 
-AtlasFly follows **Clean Architecture** with strict module boundaries and a **feature-first** organization.
+AtlasFly follows **Clean Architecture** with explicit module boundaries and a **feature-first** organization. The `app` module assembles the application, feature modules own user-facing destinations, service modules implement product-level domain and data concerns, and core modules provide reusable foundations.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -129,22 +129,25 @@ User action → UiIntent → ViewModel → UseCase → Repository → DataSource
 
 ### Module map
 
-```
+```text
 AtlasFly/
-├── app/                    # Application entry, theme, navigation shell
+├── app/                    # Application entry point, app shell, and feature assembly
 ├── core/
-│   ├── design-system/      # Shared UI tokens & components
-│   ├── presentation/       # Base presentation utilities
-│   ├── navigation/         # Type-safe Routes (kotlinx.serialization)
-│   ├── network/            # Ktor client, Hilt NetworkModule, Chucker
-│   └── local/              # Encrypted DataStore, Tink CryptoManager
+│   ├── data/               # Shared data-layer abstractions
+│   ├── design-system/      # Reusable Compose theme, tokens, and components
+│   ├── domain/             # Shared domain-layer abstractions
+│   ├── lib/                # Framework-independent shared Kotlin utilities
+│   ├── local/              # Encrypted DataStore and Tink-based local storage
+│   ├── navigation/         # Serializable, type-safe Navigation 3 routes
+│   ├── network/            # Ktor client, serialization, logging, and Chucker
+│   └── presentation/       # Shared Compose and ViewModel utilities
 ├── feature/
-│   ├── auth/               # Login, signup, email verification UI
-│   ├── home/               # Home dashboard (scaffold)
-│   ├── search/             # Flight search (scaffold)
-│   ├── travel/             # Travel planning (scaffold)
-│   ├── flight/             # Flight details (scaffold)
-│   └── profile/            # User profile (scaffold)
+│   ├── auth/               # Login, signup, OAuth, and email verification
+│   ├── explore/            # Destination and travel discovery UI
+│   ├── home/               # Home destination UI
+│   ├── planner/            # Trip-planning UI
+│   ├── profile/            # Profile and settings UI
+│   └── trips/              # Saved and active trips UI
 ├── service/
 │   ├── domain/             # Auth use cases, models, repository contracts
 │   └── data/               # Supabase Auth, local/remote data sources
@@ -166,7 +169,7 @@ AtlasFly/
 | Networking | Ktor 3.5.x (OkHttp engine), kotlinx-serialization |
 | Image loading | Coil 3.5.x |
 | Local storage | DataStore 1.2.1, Google Tink 1.23.0 |
-| Debug tooling | Chucker 4.3.1 |
+| Debug tooling | Sanitized Ktor request/header logging |
 | Build | AGP 9.2.1, Gradle 9.5.0, Version Catalog |
 | Min / Target SDK | 24 / 37 |
 
@@ -184,7 +187,7 @@ These map directly to common **EU Android job requirements**:
 | **Jetpack Compose** | Declarative UI, state hoisting, lifecycle-aware collection |
 | **Clean Architecture** | Domain use cases, repository pattern, module separation |
 | **Dependency Injection** | Hilt modules for network, local storage, auth |
-| **Security awareness** | Encrypted token storage, OAuth, deep link validation |
+| **Security awareness** | Firebase-managed tokens, encrypted metadata, OAuth, and deep-link validation |
 | **Modern Gradle** | Version catalog, Kotlin DSL, multi-module builds |
 | **Product thinking** | Auth gate, verification UX, error messaging, loading states |
 
@@ -210,6 +213,18 @@ SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
 ```
 
 Only use a publishable key in the Android app. Never add a secret or service-role key.
+
+### Supabase Edge Function setup
+
+Add the AtlasFly Supabase publishable key to the ignored `local.properties` file, or provide the
+same name as a Gradle property or environment variable:
+
+```properties
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
+```
+
+Only a publishable key belongs in the Android application. Never use a Supabase secret or legacy
+`service_role` key in this property.
 
 ### Build & run
 

@@ -128,7 +128,7 @@ class AuthRepositoryImpl @Inject constructor(
         .flowOn(Dispatchers.IO)
 
     override suspend fun logout() {
-        authLocalDatasource.clearAuthTokens()
+        authLocalDatasource.clearSessionMetadata()
         authRemoteDatasource.logout()
     }
 
@@ -147,13 +147,15 @@ class AuthRepositoryImpl @Inject constructor(
     private suspend fun persistCurrentSession() {
         val session = authRemoteDatasource.getCurrentSession() ?: return
         if (session.hasVerifiedSession) {
-            authLocalDatasource.saveAuthTokens(session)
+            authLocalDatasource.saveSessionMetadata(session)
         }
     }
 }
 
-private fun Throwable.toAuthResultFailure(): AuthResult.Failure =
-    AuthResult.Failure(toAuthError())
+private fun Throwable.toAuthResultFailure(): AuthResult.Failure {
+    if (this is CancellationException) throw this
+    return AuthResult.Failure(toAuthError())
+}
 
 private fun Throwable.toAuthError(): AuthError = when (this) {
     is AuthRestException -> when (errorCode) {

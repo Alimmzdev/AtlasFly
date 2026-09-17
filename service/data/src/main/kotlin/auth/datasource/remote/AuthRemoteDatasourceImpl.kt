@@ -9,6 +9,7 @@ import io.github.jan.supabase.auth.providers.Github as SupabaseGithub
 import io.github.jan.supabase.auth.providers.Google as SupabaseGoogle
 import io.github.jan.supabase.auth.providers.builtin.Email
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 class AuthRemoteDatasourceImpl @Inject constructor(
     private val supabase: SupabaseClient,

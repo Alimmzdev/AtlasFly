@@ -13,6 +13,10 @@ android {
         minSdk = 24
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
@@ -29,6 +33,7 @@ kotlin {
 dependencies {
     implementation(projects.core.network)
     implementation(projects.core.local)
+    implementation(projects.core.network)
     implementation(projects.service.domain)
 
     implementation(libs.datastore)

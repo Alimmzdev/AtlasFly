@@ -21,11 +21,14 @@
             <option value="$PROJECT_DIR$/core/presentation" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/auth" />
+            <option value="$PROJECT_DIR$/feature/explore" />
             <option value="$PROJECT_DIR$/feature/flight" />
             <option value="$PROJECT_DIR$/feature/home" />
+            <option value="$PROJECT_DIR$/feature/planner" />
             <option value="$PROJECT_DIR$/feature/profile" />
             <option value="$PROJECT_DIR$/feature/search" />
             <option value="$PROJECT_DIR$/feature/travel" />
+            <option value="$PROJECT_DIR$/feature/trips" />
             <option value="$PROJECT_DIR$/service" />
             <option value="$PROJECT_DIR$/service/data" />
             <option value="$PROJECT_DIR$/service/domain" />
