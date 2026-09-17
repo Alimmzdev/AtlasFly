@@ -176,7 +176,6 @@ private fun navEntry(
     return when (key) {
         Routes.Auth.Login -> NavEntry(key) {
             LoginScreen(
-                serverClientId = stringResource(R.string.default_web_client_id),
                 onNavigateToHomeScreen = {
                     onNavigate(START_DESTINATION)
                 },
@@ -208,7 +207,6 @@ private fun navEntry(
 
         is Routes.Auth.ResetPassword -> NavEntry(key) {
             ResetPasswordScreen(
-                oobCode = key.oobCode,
                 onBackToLogin = onBack,
                 onRequestNewLink = {
                     onBack()

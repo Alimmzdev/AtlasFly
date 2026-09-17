@@ -38,7 +38,8 @@ class SignUpEmailVerificationViewModel @Inject constructor(
     fun onIntent(intent: SignUpEmailVerificationUiIntent) {
         UiLogger.logEvent("SignUpEmailVerificationViewModel.Intent", intent)
         when (intent) {
-            SignUpEmailVerificationUiIntent.ResendEmailClicked -> resendVerificationEmail()
+            is SignUpEmailVerificationUiIntent.ResendEmailClicked ->
+                resendVerificationEmail(intent.email)
             SignUpEmailVerificationUiIntent.CheckVerificationClicked -> checkVerificationStatus()
             SignUpEmailVerificationUiIntent.DismissMessage -> {
                 _uiState.update { it.copy(message = null, error = null) }
@@ -46,9 +47,9 @@ class SignUpEmailVerificationViewModel @Inject constructor(
         }
     }
 
-    private fun resendVerificationEmail() {
+    private fun resendVerificationEmail(email: String) {
         viewModelScope.launch {
-            resendEmailVerificationUseCase.invoke().collect { result ->
+            resendEmailVerificationUseCase(email).collect { result ->
                 when (result) {
                     is AuthResult.Loading -> _uiState.update {
                         it.copy(isLoading = true, error = null)

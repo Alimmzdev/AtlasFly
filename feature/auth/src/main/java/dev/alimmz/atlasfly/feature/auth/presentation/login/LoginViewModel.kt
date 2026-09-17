@@ -53,10 +53,10 @@ class LoginViewModel @Inject constructor(
             is LoginUiIntent.EmailSignup -> signup(provider = EmailPassword(intent.email, intent.password))
 
             is LoginUiIntent.GoogleLogin ->
-                login(provider = Google(intent.idToken))
+                login(provider = Google)
 
             is LoginUiIntent.GithubLogin ->
-                login(provider = Github(intent.accessToken))
+                login(provider = Github)
 
             is LoginUiIntent.RefreshTokens ->
                 refreshTokens()
@@ -96,10 +96,12 @@ class LoginViewModel @Inject constructor(
                             it.copy(
                                 isLoading = false,
                                 loadingProvider = null,
-                                isLoggedIn = true,
+                                isLoggedIn = provider is EmailPassword,
                             )
                         }
-                        sendEvent(LoginEvent.NavigateHome)
+                        if (provider is EmailPassword) {
+                            sendEvent(LoginEvent.NavigateHome)
+                        }
                     }
 
                     is AuthResult.Failure -> {

@@ -2,20 +2,15 @@ package dev.alimmz.atlasfly.app
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import auth.model.AuthError
-import auth.model.AuthResult
 import auth.usecase.GetUnverifiedUserEmailUseCase
 import auth.usecase.IsAuthorizedUseCase
-import auth.usecase.IsEmailVerifiedUseCase
 import auth.usecase.LogoutUseCase
-import auth.usecase.VerifyEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import dev.alimmz.atlasfly.R
 import dev.alimmz.atlasfly.app.logging.UiLogger
 import dev.alimmz.atlasfly.app.deeplink.AuthDeepLink
 import dev.alimmz.atlasfly.app.deeplink.AuthDeepLinkParser
@@ -25,8 +20,6 @@ import javax.inject.Inject
 @HiltViewModel
 class AtlasFlyViewModel @Inject constructor(
     private val isAuthorizedUseCase: IsAuthorizedUseCase,
-    private val verifyEmailUseCase: VerifyEmailUseCase,
-    private val isEmailVerifiedUseCase: IsEmailVerifiedUseCase,
     private val getUnverifiedUserEmailUseCase: GetUnverifiedUserEmailUseCase,
     private val logoutUseCase: LogoutUseCase,
 ) : ViewModel() {
@@ -80,66 +73,15 @@ class AtlasFlyViewModel @Inject constructor(
     private fun handleDeepLink(uri: android.net.Uri) {
         viewModelScope.launch {
             when (val deepLink: AuthDeepLink? = AuthDeepLinkParser.parse(uri)) {
-                is AuthDeepLink.VerifyEmail -> applyEmailVerification(deepLink.oobCode)
-                AuthDeepLink.EmailVerifiedLanding -> refreshEmailVerificationStatus()
-                is AuthDeepLink.ResetPassword -> _uiState.update {
+                AuthDeepLink.PasswordRecovery -> _uiState.update {
                     it.copy(
                         isLoading = false,
-                        pendingNavigation = Routes.Auth.ResetPassword(deepLink.oobCode),
+                        pendingNavigation = Routes.Auth.ResetPassword,
                     )
                 }
-                AuthDeepLink.PasswordResetLanding -> _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        pendingNavigation = Routes.Auth.ForgotPassword(),
-                    )
-                }
+                AuthDeepLink.SessionCallback -> loadData()
                 null -> Unit
             }
-        }
-    }
-
-    private suspend fun applyEmailVerification(oobCode: String) {
-        verifyEmailUseCase(oobCode).collect { result ->
-            when (result) {
-                is AuthResult.Loading -> _uiState.update {
-                    it.copy(isLoading = true, errorMessage = null)
-                }
-                is AuthResult.Success -> onEmailVerified()
-                is AuthResult.Failure -> _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        errorMessage = result.error.toMessageRes(),
-                    )
-                }
-            }
-        }
-    }
-
-    private suspend fun refreshEmailVerificationStatus() {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        val isVerified: Boolean = isEmailVerifiedUseCase.invoke()
-        if (isVerified) {
-            onEmailVerified()
-        } else {
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    errorMessage = AuthError.EmailNotVerified.toMessageRes(),
-                )
-            }
-        }
-    }
-
-    private fun onEmailVerified() {
-        _uiState.update {
-            it.copy(
-                isLoading = false,
-                isAuthorized = true,
-                emailVerificationMessage = R.string.email_verified_success,
-                pendingNavigation = Routes.Main.TopLevel.Home,
-                errorMessage = null,
-            )
         }
     }
 
@@ -156,13 +98,4 @@ class AtlasFlyViewModel @Inject constructor(
         }
     }
 
-    private fun AuthError.toMessageRes(): Int {
-        return when (this) {
-            AuthError.InvalidActionCode -> R.string.error_invalid_action_code
-            AuthError.EmailNotVerified -> R.string.error_email_not_verified
-            AuthError.NetworkError -> R.string.error_network
-            AuthError.TooManyAttempts -> R.string.error_too_many
-            else -> R.string.error_unknown
-        }
-    }
 }

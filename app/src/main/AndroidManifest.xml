@@ -35,16 +35,15 @@
 
             </intent-filter>
 
-            <intent-filter android:autoVerify="true">
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="https"
-                    android:host="atlasfly.nullexdev.tech"
-                    android:pathPrefix="/__/auth/action" />
-
+                    android:scheme="atlasfly"
+                    android:host="auth"
+                    android:path="/callback" />
             </intent-filter>
         </activity>
 

@@ -7,7 +7,7 @@ import javax.inject.Inject
 class VerifyPasswordResetCodeUseCase @Inject constructor(
     private val authRepository: AuthRepository,
 ) {
-    suspend operator fun invoke(oobCode: String): ResetCodeResult {
-        return authRepository.verifyPasswordResetCode(oobCode)
+    suspend operator fun invoke(): ResetCodeResult {
+        return authRepository.verifyPasswordRecoverySession()
     }
 }

@@ -8,7 +8,7 @@ import javax.inject.Inject
 class ConfirmPasswordResetUseCase @Inject constructor(
     private val authRepository: AuthRepository,
 ) {
-    operator fun invoke(oobCode: String, newPassword: String): Flow<AuthResult> {
-        return authRepository.confirmPasswordReset(oobCode, newPassword)
+    operator fun invoke(newPassword: String): Flow<AuthResult> {
+        return authRepository.updatePassword(newPassword)
     }
 }

@@ -9,9 +9,7 @@ plugins {
 
 val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
-    if (file.exists()) {
-        file.inputStream().use(::load)
-    }
+    if (file.exists()) file.inputStream().use(::load)
 }
 val supabasePublishableKey = providers.gradleProperty("SUPABASE_PUBLISHABLE_KEY")
     .orElse(providers.environmentVariable("SUPABASE_PUBLISHABLE_KEY"))
@@ -32,6 +30,7 @@ android {
         buildConfig = true
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -48,8 +47,11 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.serialization.kotlinx.json)
-    debugImplementation(libs.chucker.full)
-    releaseImplementation(libs.chucker.noop)
+    api(platform(libs.supabase.bom))
+    api(libs.supabase.auth)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+
+    debugImplementation(libs.chucker)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

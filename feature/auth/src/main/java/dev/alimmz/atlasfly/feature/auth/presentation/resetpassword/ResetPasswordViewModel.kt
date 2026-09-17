@@ -31,21 +31,19 @@ class ResetPasswordViewModel @Inject constructor(
     private val _events = Channel<ResetPasswordEvent>()
     val events = _events.receiveAsFlow()
 
-    private var oobCode: String = ""
     private var started: Boolean = false
 
     init {
         UiLogger.observeState(viewModelScope, "ResetPasswordViewModel", uiState)
     }
 
-    fun start(oobCode: String) {
-        UiLogger.logEvent("ResetPasswordViewModel.Event", "Start(oobCode=$oobCode)")
+    fun start() {
+        UiLogger.logEvent("ResetPasswordViewModel.Event", "Start")
         if (started) return
         started = true
-        this.oobCode = oobCode
         viewModelScope.launch {
             _uiState.update { it.copy(isVerifyingCode = true, error = null) }
-            when (val result = verifyPasswordResetCodeUseCase(oobCode)) {
+            when (val result = verifyPasswordResetCodeUseCase()) {
                 is ResetCodeResult.Valid -> _uiState.update {
                     it.copy(
                         isVerifyingCode = false,
@@ -96,7 +94,7 @@ class ResetPasswordViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            confirmPasswordResetUseCase(oobCode, state.password).collect { result ->
+            confirmPasswordResetUseCase(state.password).collect { result ->
                 when (result) {
                     is AuthResult.Loading -> _uiState.update {
                         it.copy(isLoading = true, error = null)

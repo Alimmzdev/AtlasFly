@@ -18,6 +18,7 @@ android {
     }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -30,15 +31,13 @@ kotlin {
 }
 
 dependencies {
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
+    implementation(projects.core.network)
     implementation(projects.core.local)
     implementation(projects.core.network)
     implementation(projects.service.domain)
 
     implementation(libs.datastore)
-    implementation(libs.ktor.client.core)
-    implementation(libs.kotlinx.serialization.json)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
