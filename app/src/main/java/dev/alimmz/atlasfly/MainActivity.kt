@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         handleIncomingIntent(intent)
+        requestChuckerNotificationPermission()
     }
 
     override fun onNewIntent(intent: Intent) {

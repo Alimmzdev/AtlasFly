@@ -51,7 +51,8 @@ dependencies {
     api(libs.supabase.auth)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
-    debugImplementation(libs.chucker)
+    debugImplementation(libs.chucker.full)
+    releaseImplementation(libs.chucker.noop)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

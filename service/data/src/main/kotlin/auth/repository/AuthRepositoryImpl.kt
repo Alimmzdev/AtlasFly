@@ -6,7 +6,7 @@ import auth.model.AuthError
 import auth.model.AuthProvider
 import auth.model.AuthResult
 import auth.model.ResetCodeResult
-import dev.alimmz.atlasfly.core.local.model.AuthTokens
+import dev.alimmz.atlasfly.core.local.model.AuthSessionMetadata
 import io.github.jan.supabase.auth.exception.AuthErrorCode
 import io.github.jan.supabase.auth.exception.AuthRestException
 import kotlinx.coroutines.Dispatchers
@@ -35,8 +35,8 @@ class AuthRepositoryImpl @Inject constructor(
         }
         if (remoteAuthorized) {
             persistCurrentSession()
-        } else if (authLocalDatasource.isAuthorized()) {
-            authLocalDatasource.clearAuthTokens()
+        } else if (authLocalDatasource.getSessionMetadata().hasVerifiedSession) {
+            authLocalDatasource.clearSessionMetadata()
         }
         return remoteAuthorized
     }
@@ -60,8 +60,8 @@ class AuthRepositoryImpl @Inject constructor(
     override fun signup(provider: AuthProvider.EmailPassword): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
         authRemoteDatasource.signup(provider = provider)
-        authLocalDatasource.saveAuthTokens(
-            AuthTokens(email = provider.email.trim(), emailVerified = false),
+        authLocalDatasource.saveSessionMetadata(
+            AuthSessionMetadata(email = provider.email.trim(), emailVerified = false),
         )
         emit(AuthResult.Success)
     }
@@ -78,7 +78,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun getUnverifiedUserEmail(): String? {
         return authRemoteDatasource.getUnverifiedUserEmail()
-            ?: authLocalDatasource.getAuthTokens().email.takeIf(String::isNotBlank)
+            ?: authLocalDatasource.getSessionMetadata().email.takeIf(String::isNotBlank)
     }
 
     override fun resendEmailVerification(email: String): Flow<AuthResult> = flow {
@@ -141,7 +141,7 @@ class AuthRepositoryImpl @Inject constructor(
             // The server no longer knows this user, but the client session must
             // still be discarded so the next launch does not retry it.
         }
-        authLocalDatasource.clearAuthTokens()
+        authLocalDatasource.clearSessionMetadata()
     }
 
     private suspend fun persistCurrentSession() {

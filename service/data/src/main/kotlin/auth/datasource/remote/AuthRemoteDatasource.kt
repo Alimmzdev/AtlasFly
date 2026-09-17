@@ -9,7 +9,7 @@ interface AuthRemoteDatasource {
     suspend fun signup(provider: AuthProvider.EmailPassword)
     suspend fun isEmailVerified(): Boolean
     suspend fun getUnverifiedUserEmail(): String?
-    suspend fun getCurrentSession(): AuthTokens?
+    suspend fun getCurrentSession(): AuthSessionMetadata?
     suspend fun resendEmailVerification(email: String)
     suspend fun sendPasswordResetEmail(email: String)
     suspend fun verifyPasswordRecoverySession(): String

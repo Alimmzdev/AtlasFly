@@ -34,6 +34,12 @@ object SupabaseModule {
         }
     }
 
+    @Provides
+    @Singleton
+    fun provideAuthTokenProvider(
+        provider: SupabaseAuthTokenProvider,
+    ): AuthTokenProvider = provider
+
     private const val SUPABASE_URL = "https://tstjkjlbdxnsqhjtzvau.supabase.co"
     private const val AUTH_SCHEME = "atlasfly"
     private const val AUTH_HOST = "auth"

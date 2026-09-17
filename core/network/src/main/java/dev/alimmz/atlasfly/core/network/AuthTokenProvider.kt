@@ -12,9 +12,9 @@ class AuthenticatedToken(
 }
 
 sealed class AuthTokenException(message: String, cause: Throwable? = null) : Exception(message, cause) {
-    class MissingUser : AuthTokenException("No Firebase user is signed in")
-    class MissingToken : AuthTokenException("Firebase returned an empty ID token")
-    class UserChanged : AuthTokenException("The Firebase user changed while retrieving a token")
-    class Network(cause: Throwable) : AuthTokenException("Firebase token retrieval failed", cause)
-    class Unknown(cause: Throwable) : AuthTokenException("Firebase token retrieval failed", cause)
+    class MissingUser : AuthTokenException("No Supabase user is signed in")
+    class MissingToken : AuthTokenException("Supabase returned an empty access token")
+    class UserChanged : AuthTokenException("The Supabase user changed while retrieving a token")
+    class Network(cause: Throwable) : AuthTokenException("Supabase token retrieval failed", cause)
+    class Unknown(cause: Throwable) : AuthTokenException("Supabase token retrieval failed", cause)
 }

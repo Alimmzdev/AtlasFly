@@ -1,7 +1,7 @@
 package auth.datasource.remote
 
 import auth.model.AuthProvider
-import dev.alimmz.atlasfly.core.local.model.AuthTokens
+import dev.alimmz.atlasfly.core.local.model.AuthSessionMetadata
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
@@ -9,7 +9,6 @@ import io.github.jan.supabase.auth.providers.Github as SupabaseGithub
 import io.github.jan.supabase.auth.providers.Google as SupabaseGoogle
 import io.github.jan.supabase.auth.providers.builtin.Email
 import javax.inject.Inject
-import kotlin.coroutines.cancellation.CancellationException
 
 class AuthRemoteDatasourceImpl @Inject constructor(
     private val supabase: SupabaseClient,
@@ -62,13 +61,10 @@ class AuthRemoteDatasourceImpl @Inject constructor(
         return user.email.takeIf { user.emailConfirmedAt == null }
     }
 
-    override suspend fun getCurrentSession(): AuthTokens? {
+    override suspend fun getCurrentSession(): AuthSessionMetadata? {
         val session = supabase.auth.currentSessionOrNull() ?: return null
         val user = session.user ?: return null
-        return AuthTokens(
-            accessToken = session.accessToken,
-            refreshToken = session.refreshToken,
-            expiresAt = session.expiresAt.toEpochMilliseconds(),
+        return AuthSessionMetadata(
             uid = user.id,
             email = user.email.orEmpty(),
             emailVerified = user.emailConfirmedAt != null,
