@@ -92,96 +92,105 @@ fun AccountSettingsScreen(
                     .padding(horizontal = 20.dp, vertical = 12.dp),
             ) {
                 ProfileFeedback(state.error, state.notice, viewModel::clearFeedback)
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(76.dp)
-                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                ProfileSectionCard(title = stringResource(R.string.profile_photo)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(18.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(
-                            text = displayName.trim().firstOrNull()?.uppercase() ?: "A",
-                            style = MaterialTheme.typography.headlineLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        OutlinedButton(
-                            onClick = onSelectImage,
-                            enabled = !state.isUploading,
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
                         ) {
-                            if (state.isUploading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
-                                    strokeWidth = 2.dp,
+                            Text(
+                                text = displayName.trim().firstOrNull()?.uppercase() ?: "A",
+                                style = MaterialTheme.typography.headlineLarge,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            OutlinedButton(
+                                onClick = onSelectImage,
+                                enabled = !state.isUploading,
+                            ) {
+                                if (state.isUploading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp,
+                                    )
+                                } else {
+                                    Icon(Icons.Outlined.AddAPhoto, contentDescription = null)
+                                }
+                                Text(
+                                    stringResource(R.string.profile_change_photo),
+                                    modifier = Modifier.padding(start = 8.dp),
                                 )
-                            } else {
-                                Icon(Icons.Outlined.AddAPhoto, contentDescription = null)
                             }
                             Text(
-                                stringResource(R.string.profile_change_photo),
+                                stringResource(R.string.profile_photo_requirements),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    if (state.profile?.avatarPath != null) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Outlined.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                stringResource(R.string.profile_private_photo_saved),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(start = 8.dp),
                             )
                         }
-                        Text(
-                            stringResource(R.string.profile_photo_requirements),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
                     }
                 }
-                if (state.profile?.avatarPath != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Outlined.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        Text(
-                            stringResource(R.string.profile_private_photo_saved),
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(start = 8.dp),
-                        )
-                    }
-                }
-                OutlinedTextField(
-                    value = displayName,
-                    onValueChange = { displayName = it.take(100) },
-                    label = { Text(stringResource(R.string.profile_display_name)) },
-                    supportingText = { Text(stringResource(R.string.profile_display_name_hint)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Button(
-                    onClick = {
-                        viewModel.saveDisplayName(displayName.trim().ifEmpty { null })
-                    },
-                    enabled = !state.isSaving &&
-                        displayName.trim().ifEmpty { null } != state.profile?.displayName,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (state.isSaving) R.string.profile_saving else R.string.profile_save_changes,
-                        ),
+                ProfileSectionCard(title = stringResource(R.string.profile_personal_details)) {
+                    OutlinedTextField(
+                        value = displayName,
+                        onValueChange = { displayName = it.take(100) },
+                        label = { Text(stringResource(R.string.profile_display_name)) },
+                        supportingText = { Text(stringResource(R.string.profile_display_name_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
                     )
+                    Button(
+                        onClick = {
+                            viewModel.saveDisplayName(displayName.trim().ifEmpty { null })
+                        },
+                        enabled = !state.isSaving &&
+                            displayName.trim().ifEmpty { null } != state.profile?.displayName,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            stringResource(
+                                if (state.isSaving) {
+                                    R.string.profile_saving
+                                } else {
+                                    R.string.profile_save_changes
+                                },
+                            ),
+                        )
+                    }
                 }
                 SubscriptionCard(
                     plan = state.subscription?.plan,
                     status = state.subscription?.status,
                     periodEnd = state.subscription?.currentPeriodEnd,
                 )
-                Text(
-                    stringResource(R.string.profile_app_settings),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-                languageSwitcher()
+                ProfileSectionCard(title = stringResource(R.string.profile_app_settings)) {
+                    languageSwitcher()
+                }
                 state.profile?.userId?.let { userId ->
                     Text(
                         text = stringResource(R.string.profile_account_id, userId),
@@ -203,12 +212,22 @@ private fun SubscriptionCard(
     status: SubscriptionStatus?,
     periodEnd: String?,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+        shape = MaterialTheme.shapes.extraLarge,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.padding(20.dp),
         ) {
-            Text(stringResource(R.string.profile_subscription), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(R.string.profile_subscription),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
             Text(
                 when (plan) {
                     SubscriptionPlan.Free -> stringResource(R.string.profile_plan_free)
@@ -216,7 +235,7 @@ private fun SubscriptionCard(
                     null -> stringResource(R.string.profile_plan_loading)
                 },
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
             status?.let {
                 Text(

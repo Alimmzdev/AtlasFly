@@ -2,6 +2,7 @@ package dev.alimmz.atlasfly.feature.profile.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -78,21 +80,25 @@ fun SavedPlacesScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            ProfileSectionCard(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
-                OutlinedTextField(
-                    value = state.countryCode,
-                    onValueChange = viewModel::setCountryCode,
-                    label = { Text(stringResource(R.string.profile_country_code_filter)) },
-                    singleLine = true,
-                    leadingIcon = { Icon(Icons.Outlined.FilterAlt, contentDescription = null) },
-                    modifier = Modifier.weight(1f),
-                )
-                Button(onClick = viewModel::applyFilter) {
-                    Text(stringResource(R.string.profile_apply))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    OutlinedTextField(
+                        value = state.countryCode,
+                        onValueChange = viewModel::setCountryCode,
+                        label = { Text(stringResource(R.string.profile_country_code_filter)) },
+                        singleLine = true,
+                        leadingIcon = { Icon(Icons.Outlined.FilterAlt, contentDescription = null) },
+                        modifier = Modifier.weight(1f),
+                    )
+                    Button(onClick = viewModel::applyFilter) {
+                        Text(stringResource(R.string.profile_apply))
+                    }
                 }
             }
             ProfileFeedback(
@@ -115,6 +121,7 @@ fun SavedPlacesScreen(
                 )
                 else -> LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp),
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     items(state.items, key = { it.id }) { place ->
@@ -185,7 +192,13 @@ private fun SavedPlaceCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+        modifier = modifier.fillMaxWidth(),
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(16.dp),

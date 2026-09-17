@@ -80,72 +80,67 @@ private fun PreferencesFormContent(
             .padding(horizontal = 20.dp, vertical = 12.dp),
     ) {
         ProfileFeedback(state.error, state.notice, onDismissFeedback)
-        Text(
-            stringResource(R.string.profile_regional_preferences),
-            style = MaterialTheme.typography.titleMedium,
-        )
-        OutlinedTextField(
-            value = form.languageCode,
-            onValueChange = { value -> onFormChanged { it.copy(languageCode = value) } },
-            label = { Text(stringResource(R.string.profile_language_code)) },
-            supportingText = { Text(stringResource(R.string.profile_language_code_hint)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OutlinedTextField(
-            value = form.currencyCode,
-            onValueChange = { value ->
-                onFormChanged { it.copy(currencyCode = value.take(3).uppercase()) }
-            },
-            label = { Text(stringResource(R.string.profile_currency_code)) },
-            supportingText = { Text(stringResource(R.string.profile_currency_code_hint)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OutlinedTextField(
-            value = form.timeZone,
-            onValueChange = { value -> onFormChanged { it.copy(timeZone = value) } },
-            label = { Text(stringResource(R.string.profile_time_zone)) },
-            supportingText = { Text(stringResource(R.string.profile_time_zone_hint)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            UnitSelector(
-                label = stringResource(R.string.profile_distance_unit),
-                value = form.distanceUnit.label(),
-                values = DistanceUnit.entries.map { it to it.label() },
-                onSelected = { value -> onFormChanged { it.copy(distanceUnit = value) } },
-                modifier = Modifier.weight(1f),
+        ProfileSectionCard(title = stringResource(R.string.profile_regional_preferences)) {
+            OutlinedTextField(
+                value = form.languageCode,
+                onValueChange = { value -> onFormChanged { it.copy(languageCode = value) } },
+                label = { Text(stringResource(R.string.profile_language_code)) },
+                supportingText = { Text(stringResource(R.string.profile_language_code_hint)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
             )
-            UnitSelector(
-                label = stringResource(R.string.profile_temperature_unit),
-                value = form.temperatureUnit.label(),
-                values = TemperatureUnit.entries.map { it to it.label() },
-                onSelected = { value -> onFormChanged { it.copy(temperatureUnit = value) } },
-                modifier = Modifier.weight(1f),
+            OutlinedTextField(
+                value = form.currencyCode,
+                onValueChange = { value ->
+                    onFormChanged { it.copy(currencyCode = value.take(3).uppercase()) }
+                },
+                label = { Text(stringResource(R.string.profile_currency_code)) },
+                supportingText = { Text(stringResource(R.string.profile_currency_code_hint)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = form.timeZone,
+                onValueChange = { value -> onFormChanged { it.copy(timeZone = value) } },
+                label = { Text(stringResource(R.string.profile_time_zone)) },
+                supportingText = { Text(stringResource(R.string.profile_time_zone_hint)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                UnitSelector(
+                    label = stringResource(R.string.profile_distance_unit),
+                    value = form.distanceUnit.label(),
+                    values = DistanceUnit.entries.map { it to it.label() },
+                    onSelected = { value -> onFormChanged { it.copy(distanceUnit = value) } },
+                    modifier = Modifier.weight(1f),
+                )
+                UnitSelector(
+                    label = stringResource(R.string.profile_temperature_unit),
+                    value = form.temperatureUnit.label(),
+                    values = TemperatureUnit.entries.map { it to it.label() },
+                    onSelected = { value -> onFormChanged { it.copy(temperatureUnit = value) } },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        ProfileSectionCard(title = stringResource(R.string.profile_notifications)) {
+            PreferenceSwitch(
+                title = stringResource(R.string.profile_flight_notifications),
+                checked = form.flightNotifications,
+                onCheckedChange = { value -> onFormChanged { it.copy(flightNotifications = value) } },
+            )
+            PreferenceSwitch(
+                title = stringResource(R.string.profile_trip_reminders),
+                checked = form.tripReminders,
+                onCheckedChange = { value -> onFormChanged { it.copy(tripReminders = value) } },
+            )
+            PreferenceSwitch(
+                title = stringResource(R.string.profile_marketing_notifications),
+                checked = form.marketingNotifications,
+                onCheckedChange = { value -> onFormChanged { it.copy(marketingNotifications = value) } },
             )
         }
-        Text(
-            stringResource(R.string.profile_notifications),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        PreferenceSwitch(
-            title = stringResource(R.string.profile_flight_notifications),
-            checked = form.flightNotifications,
-            onCheckedChange = { value -> onFormChanged { it.copy(flightNotifications = value) } },
-        )
-        PreferenceSwitch(
-            title = stringResource(R.string.profile_trip_reminders),
-            checked = form.tripReminders,
-            onCheckedChange = { value -> onFormChanged { it.copy(tripReminders = value) } },
-        )
-        PreferenceSwitch(
-            title = stringResource(R.string.profile_marketing_notifications),
-            checked = form.marketingNotifications,
-            onCheckedChange = { value -> onFormChanged { it.copy(marketingNotifications = value) } },
-        )
         Button(
             onClick = onSave,
             enabled = state.hasChanges && !state.isSaving &&

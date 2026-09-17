@@ -2,11 +2,13 @@ package dev.alimmz.atlasfly.feature.profile.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CloudOff
@@ -20,12 +22,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,6 +45,8 @@ internal fun ProfileDetailScaffold(
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -53,11 +60,44 @@ internal fun ProfileDetailScaffold(
                     }
                 },
                 actions = actions,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
+                scrollBehavior = scrollBehavior,
             )
         },
-        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.background,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         content = content,
     )
+}
+
+@Composable
+internal fun ProfileSectionCard(
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            modifier = Modifier.padding(20.dp),
+        ) {
+            title?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            content()
+        }
+    }
 }
 
 @Composable
@@ -74,6 +114,7 @@ internal fun ProfileFeedback(
     }
     val isError = error != null
     Card(
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isError) {
                 MaterialTheme.colorScheme.errorContainer

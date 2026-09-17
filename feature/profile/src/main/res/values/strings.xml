@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="profile_title">Profile</string>
+    <string name="profile_your_travel">Your travel</string>
+    <string name="profile_settings_and_account">Settings and account</string>
+    <string name="profile_photo">Profile photo</string>
+    <string name="profile_personal_details">Personal details</string>
     <string name="profile_saved_places">Saved Places</string>
     <string name="profile_saved_trips">Saved Trips</string>
     <string name="profile_preferences">Preferences</string>

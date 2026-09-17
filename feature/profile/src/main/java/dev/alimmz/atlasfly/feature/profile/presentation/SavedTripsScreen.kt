@@ -2,6 +2,7 @@ package dev.alimmz.atlasfly.feature.profile.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -80,13 +82,16 @@ fun SavedTripsScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            TripFilters(
-                status = state.statusFilter,
-                archived = state.archivedFilter,
-                onStatusChanged = viewModel::setStatusFilter,
-                onArchivedChanged = viewModel::setArchivedFilter,
+            ProfileSectionCard(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
+            ) {
+                TripFilters(
+                    status = state.statusFilter,
+                    archived = state.archivedFilter,
+                    onStatusChanged = viewModel::setStatusFilter,
+                    onArchivedChanged = viewModel::setArchivedFilter,
+                )
+            }
             ProfileFeedback(
                 error = state.error,
                 notice = state.notice,
@@ -107,6 +112,7 @@ fun SavedTripsScreen(
                 )
                 else -> LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp),
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     items(state.items, key = { it.id }) { trip ->
@@ -250,7 +256,13 @@ private fun SavedTripCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+        modifier = modifier.fillMaxWidth(),
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp)) {
             Icon(
                 Icons.Outlined.Luggage,

@@ -1,7 +1,10 @@
 package dev.alimmz.atlasfly.core.network
 
+import android.content.Context
+import com.chuckerteam.chucker.api.ChuckerInterceptor
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
@@ -10,11 +13,11 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import javax.inject.Singleton
-import io.ktor.http.HttpHeaders
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -36,9 +39,17 @@ object NetworkModule {
     @Provides
     @Singleton
     @AtlasFlyHttpClient
-    fun provideHttpClient(json: Json): HttpClient = HttpClient(OkHttp) {
+    fun provideHttpClient(
+        json: Json,
+        @ApplicationContext context: Context,
+    ): HttpClient = HttpClient(OkHttp) {
         engine {
             preconfigured = OkHttpClient.Builder()
+                .addInterceptor(
+                    ChuckerInterceptor.Builder(context)
+                        .redactHeaders(HttpHeaders.Authorization, API_KEY_HEADER)
+                        .build(),
+                )
                 .followRedirects(false)
                 .followSslRedirects(false)
                 .retryOnConnectionFailure(false)

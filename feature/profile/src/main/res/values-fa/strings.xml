@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="profile_title">پروفایل</string>
+    <string name="profile_your_travel">سفرهای شما</string>
+    <string name="profile_settings_and_account">تنظیمات و حساب</string>
+    <string name="profile_photo">تصویر پروفایل</string>
+    <string name="profile_personal_details">اطلاعات شخصی</string>
     <string name="profile_saved_places">مکان‌های ذخیره‌شده</string>
     <string name="profile_saved_trips">سفرهای ذخیره‌شده</string>
     <string name="profile_preferences">ترجیحات</string>

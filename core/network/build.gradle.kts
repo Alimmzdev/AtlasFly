@@ -48,6 +48,8 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.serialization.kotlinx.json)
+    debugImplementation(libs.chucker.full)
+    releaseImplementation(libs.chucker.noop)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
