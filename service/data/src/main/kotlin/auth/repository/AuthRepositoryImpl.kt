@@ -6,12 +6,9 @@ import auth.model.AuthError
 import auth.model.AuthProvider
 import auth.model.AuthResult
 import auth.model.ResetCodeResult
-import com.google.firebase.FirebaseTooManyRequestsException
-import com.google.firebase.auth.FirebaseAuthActionCodeException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import dev.alimmz.atlasfly.core.local.model.AuthTokens
+import io.github.jan.supabase.auth.exception.AuthErrorCode
+import io.github.jan.supabase.auth.exception.AuthRestException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -28,12 +25,11 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     override suspend fun isAuthorized(): Boolean {
-        if (authLocalDatasource.isAuthorized()) {
-            return true
-        }
         val remoteAuthorized = authRemoteDatasource.isAuthorized()
         if (remoteAuthorized) {
             persistCurrentSession()
+        } else if (authLocalDatasource.isAuthorized()) {
+            authLocalDatasource.clearAuthTokens()
         }
         return remoteAuthorized
     }
@@ -57,15 +53,9 @@ class AuthRepositoryImpl @Inject constructor(
     override fun signup(provider: AuthProvider.EmailPassword): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
         authRemoteDatasource.signup(provider = provider)
-        emit(AuthResult.Success)
-    }
-        .catch { e -> emit(e.toAuthResultFailure()) }
-        .flowOn(Dispatchers.IO)
-
-    override fun verifyEmail(oobCode: String): Flow<AuthResult> = flow {
-        emit(AuthResult.Loading)
-        authRemoteDatasource.verifyEmail(oobCode)
-        persistCurrentSession()
+        authLocalDatasource.saveAuthTokens(
+            AuthTokens(email = provider.email.trim(), emailVerified = false),
+        )
         emit(AuthResult.Success)
     }
         .catch { e -> emit(e.toAuthResultFailure()) }
@@ -81,11 +71,12 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun getUnverifiedUserEmail(): String? {
         return authRemoteDatasource.getUnverifiedUserEmail()
+            ?: authLocalDatasource.getAuthTokens().email.takeIf(String::isNotBlank)
     }
 
-    override fun resendEmailVerification(): Flow<AuthResult> = flow {
+    override fun resendEmailVerification(email: String): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
-        authRemoteDatasource.resendEmailVerification()
+        authRemoteDatasource.resendEmailVerification(email)
         emit(AuthResult.Success)
     }
         .catch { e -> emit(e.toAuthResultFailure()) }
@@ -99,10 +90,10 @@ class AuthRepositoryImpl @Inject constructor(
         .catch { e -> emit(e.toAuthResultFailure()) }
         .flowOn(Dispatchers.IO)
 
-    override suspend fun verifyPasswordResetCode(oobCode: String): ResetCodeResult {
+    override suspend fun verifyPasswordRecoverySession(): ResetCodeResult {
         return withContext(Dispatchers.IO) {
             try {
-                val email = authRemoteDatasource.verifyPasswordResetCode(oobCode)
+                val email = authRemoteDatasource.verifyPasswordRecoverySession()
                 ResetCodeResult.Valid(email)
             } catch (e: CancellationException) {
                 throw e
@@ -112,12 +103,9 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun confirmPasswordReset(
-        oobCode: String,
-        newPassword: String,
-    ): Flow<AuthResult> = flow {
+    override fun updatePassword(newPassword: String): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
-        authRemoteDatasource.confirmPasswordReset(oobCode, newPassword)
+        authRemoteDatasource.updatePassword(newPassword)
         emit(AuthResult.Success)
     }
         .catch { e -> emit(e.toAuthResultFailure()) }
@@ -149,12 +137,22 @@ private fun Throwable.toAuthResultFailure(): AuthResult.Failure =
     AuthResult.Failure(toAuthError())
 
 private fun Throwable.toAuthError(): AuthError = when (this) {
-    is FirebaseAuthWeakPasswordException -> AuthError.WeakPassword
-    is FirebaseAuthInvalidCredentialsException -> AuthError.InvalidCredentials
-    is FirebaseAuthInvalidUserException -> AuthError.UserNotFound
-    is FirebaseAuthUserCollisionException -> AuthError.AccountExistsDifferentProvider
-    is FirebaseAuthActionCodeException -> AuthError.InvalidActionCode
-    is FirebaseTooManyRequestsException -> AuthError.TooManyAttempts
+    is AuthRestException -> when (errorCode) {
+        AuthErrorCode.WeakPassword -> AuthError.WeakPassword
+        AuthErrorCode.InvalidCredentials -> AuthError.InvalidCredentials
+        AuthErrorCode.UserNotFound -> AuthError.UserNotFound
+        AuthErrorCode.UserAlreadyExists,
+        AuthErrorCode.EmailExists,
+        AuthErrorCode.IdentityAlreadyExists -> AuthError.AccountExistsDifferentProvider
+        AuthErrorCode.EmailNotConfirmed -> AuthError.EmailNotVerified
+        AuthErrorCode.OtpExpired,
+        AuthErrorCode.BadCodeVerifier,
+        AuthErrorCode.FlowStateExpired,
+        AuthErrorCode.FlowStateNotFound -> AuthError.InvalidActionCode
+        AuthErrorCode.OverRequestRateLimit,
+        AuthErrorCode.OverEmailSendRateLimit -> AuthError.TooManyAttempts
+        else -> AuthError.Unknown(cause = this)
+    }
     is CancellationException -> AuthError.Cancelled
     is IOException -> AuthError.NetworkError
     else -> AuthError.Unknown(cause = this)

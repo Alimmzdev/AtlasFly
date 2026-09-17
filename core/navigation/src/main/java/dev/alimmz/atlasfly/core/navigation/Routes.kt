@@ -31,8 +31,6 @@ sealed interface Routes {
         ) : Auth
 
         @Serializable
-        data class ResetPassword(
-            val oobCode: String,
-        ) : Auth
+        data object ResetPassword : Auth
     }
 }

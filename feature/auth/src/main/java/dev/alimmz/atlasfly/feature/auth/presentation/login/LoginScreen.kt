@@ -1,8 +1,5 @@
 package dev.alimmz.atlasfly.feature.auth.presentation.login
 
-import android.app.Activity
-import android.content.Intent
-import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,22 +17,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import auth.model.AuthError
-import kotlinx.coroutines.launch
 import dev.alimmz.atlasfly.core.designsystem.theme.AtlasFlyTheme
 import dev.alimmz.atlasfly.feature.auth.presentation.components.AccountNotFoundDialog
 import dev.alimmz.atlasfly.feature.auth.presentation.components.AuthHeader
@@ -45,8 +38,6 @@ import dev.alimmz.atlasfly.feature.auth.presentation.components.GithubLoginButto
 import dev.alimmz.atlasfly.feature.auth.presentation.components.GoogleLoginButton
 import dev.alimmz.atlasfly.feature.auth.presentation.components.PasswordField
 import dev.alimmz.atlasfly.feature.auth.presentation.components.SignInButton
-import dev.alimmz.atlasfly.feature.auth.presentation.helpers.launchGitHubLogin
-import dev.alimmz.atlasfly.feature.auth.presentation.helpers.launchGoogleLogin
 import dev.alimmz.atlasfly.feature.auth.presentation.mapper.toUserMessage
 import dev.alimmz.atlasfly.feature.auth.presentation.R
 
@@ -62,17 +53,11 @@ fun LoginScreen(
     onNavigateToHomeScreen: () -> Unit,
     onNavigateToSignUpEmailVerification: (String) -> Unit,
     onNavigateToForgotPassword: (String) -> Unit,
-    serverClientId: String,
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
-    val activity = LocalContext.current as Activity
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDialog by rememberSaveable { mutableStateOf(false) }
-    val googleFailed = stringResource(R.string.auth_google_failed)
-    val githubTokenFailed = stringResource(R.string.auth_github_token_failed)
-    val githubFailed = stringResource(R.string.auth_github_failed)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect {
@@ -116,58 +101,12 @@ fun LoginScreen(
             )
         },
         onGoogleLogin = {
-            scope.launch {
-                launchGoogleLogin(
-                    activity = activity,
-                    serverClientId = serverClientId,
-                    onSuccess = { idToken ->
-                        viewModel.onIntent(
-                            LoginUiIntent.GoogleLogin(idToken)
-                        )
-                    },
-                    onError = { e ->
-                        if (e is NoCredentialException) {
-                            openAddGoogleAccountScreen(activity = activity)
-                        } else {
-                            scope.launch {
-                                snackbarHostState.showSnackbar(message = googleFailed)
-                            }
-                        }
-                    }
-                )
-            }
+            viewModel.onIntent(LoginUiIntent.GoogleLogin)
         },
         onGithubLogin = {
-            launchGitHubLogin(
-                activity = activity,
-                onSuccess = { user, githubToken ->
-                    if (githubToken != null) {
-                        viewModel.onIntent(
-                            LoginUiIntent.GithubLogin(user = user, accessToken = githubToken)
-                        )
-                    } else {
-                        scope.launch {
-                            snackbarHostState.showSnackbar(message = githubTokenFailed)
-                        }
-                    }
-                },
-                onFailure = { e ->
-                    scope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = e.localizedMessage ?: githubFailed
-                        )
-                    }
-                }
-            )
+            viewModel.onIntent(LoginUiIntent.GithubLogin)
         },
     )
-}
-
-private fun openAddGoogleAccountScreen(activity: Activity) {
-    val intent = Intent(Settings.ACTION_ADD_ACCOUNT).apply {
-        putExtra(Settings.EXTRA_ACCOUNT_TYPES, arrayOf("com.google"))
-    }
-    activity.startActivity(intent)
 }
 
 @Composable

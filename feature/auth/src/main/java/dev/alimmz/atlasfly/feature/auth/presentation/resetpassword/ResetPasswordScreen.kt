@@ -33,15 +33,14 @@ import dev.alimmz.atlasfly.feature.auth.presentation.R
 
 @Composable
 fun ResetPasswordScreen(
-    oobCode: String,
     onBackToLogin: () -> Unit,
     onRequestNewLink: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ResetPasswordViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    LaunchedEffect(oobCode) {
-        viewModel.start(oobCode)
+    LaunchedEffect(Unit) {
+        viewModel.start()
     }
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->

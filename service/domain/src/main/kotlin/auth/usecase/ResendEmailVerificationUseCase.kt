@@ -8,7 +8,7 @@ import javax.inject.Inject
 class ResendEmailVerificationUseCase @Inject constructor(
     private val authRepository: AuthRepository,
 ) {
-    operator fun invoke(): Flow<AuthResult> {
-        return authRepository.resendEmailVerification()
+    operator fun invoke(email: String): Flow<AuthResult> {
+        return authRepository.resendEmailVerification(email)
     }
 }

@@ -62,7 +62,7 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 |---|---|
 | **Architecture** | Multi-module Clean Architecture: `app` → `feature` → `service` → `core` |
 | **UI pattern** | Compose + MVI (`UiState` / `UiIntent` / `Event`) in ViewModels |
-| **Auth** | Email/password, Google, GitHub via Firebase Auth |
+| **Auth** | Email/password, Google, GitHub via Supabase Auth |
 | **Security** | Auth tokens encrypted with Google Tink + DataStore |
 | **Navigation** | Type-safe routes with Navigation 3 |
 | **Deep links** | Email verification handled in `MainActivity` → `AtlasFlyViewModel` |
@@ -79,14 +79,14 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 - [x] Jetpack Compose UI with Material 3
 - [x] Splash screen & app shell with auth gate
 - [x] Email/password sign-up and sign-in
-- [x] Google Sign-In (Credential Manager)
+- [x] Google OAuth through Supabase Auth
 - [x] GitHub OAuth login
 - [x] Sign-up email verification screen with resend
-- [x] Deep link parsing for email verification (`oobCode` + verified landing)
+- [x] Supabase deep links for email verification, OAuth, and password recovery
 - [x] Encrypted auth token persistence (Tink + DataStore)
 - [x] Ktor HTTP client with debug network inspection (Chucker)
 - [x] Hilt dependency injection across layers
-- [x] Use-case driven domain layer (`LoginUseCase`, `VerifyEmailUseCase`, …)
+- [x] Use-case driven domain layer (`LoginUseCase`, `SignUpUseCase`, …)
 
 ### Roadmap
 
@@ -115,7 +115,7 @@ AtlasFly follows **Clean Architecture** with strict module boundaries and a **fe
    │ :feature  │    │  :service  │    │    :core    │
    │ auth      │    │  domain    │    │  network    │
    │ home      │    │  data      │    │  local      │
-   │ search …  │    │ (Firebase) │    │  navigation │
+   │ search …  │    │ (Supabase) │    │  navigation │
    └───────────┘    └────────────┘    └─────────────┘
 ```
 
@@ -147,7 +147,7 @@ AtlasFly/
 │   └── profile/            # User profile (scaffold)
 ├── service/
 │   ├── domain/             # Auth use cases, models, repository contracts
-│   └── data/               # Firebase Auth, local/remote data sources
+│   └── data/               # Supabase Auth, local/remote data sources
 └── gradle/libs.versions.toml
 ```
 
@@ -162,7 +162,7 @@ AtlasFly/
 | Architecture | Clean Architecture, MVI-style UDF, multi-module |
 | DI | Hilt 2.60.1, KSP 2.3.10 |
 | Navigation | Navigation 3 (type-safe routes) |
-| Auth | Firebase Auth, Credential Manager, Google & GitHub OAuth |
+| Auth | Supabase Auth, Google & GitHub OAuth |
 | Networking | Ktor 3.5.x (OkHttp engine), kotlinx-serialization |
 | Image loading | Coil 3.5.x |
 | Local storage | DataStore 1.2.1, Google Tink 1.23.0 |
@@ -198,14 +198,18 @@ These map directly to common **EU Android job requirements**:
 - JDK 17+
 - Android SDK 37
 
-### Firebase setup (required for auth)
+### Supabase setup (required for auth)
 
-1. Create a Firebase project and add an Android app with package `dev.alimmz.atlasfly`
-2. Download `google-services.json` into `app/`
-3. Enable **Email/Password**, **Google**, and **GitHub** sign-in in Firebase Console
-4. Configure OAuth redirect URIs for GitHub if using GitHub login
+1. Enable **Email**, **Google**, and **GitHub** providers in Supabase Authentication
+2. Add `atlasfly://auth` to Authentication → URL Configuration → Redirect URLs
+3. Configure the Google and GitHub provider client credentials in Supabase
+4. Add the project publishable key to the ignored `local.properties` file:
 
-> The repo includes a placeholder `google-services.json`. Replace it with your own for local development.
+```properties
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
+```
+
+Only use a publishable key in the Android app. Never add a secret or service-role key.
 
 ### Build & run
 
@@ -227,7 +231,7 @@ These map directly to common **EU Android job requirements**:
 
 - **Package scheme:** `dev.alimmz.atlasfly.{layer}.{module}`
 - **Feature modules** own their screens, ViewModels, and UI components
-- **Service modules** encapsulate backend integration (Firebase Auth today)
+- **Service modules** encapsulate backend integration (Supabase Auth)
 - **Core modules** provide shared infrastructure consumed by features
 - **Use cases** expose single-responsibility domain operations
 - **Version catalog:** bump dependencies in `gradle/libs.versions.toml`, reference via `libs.*`

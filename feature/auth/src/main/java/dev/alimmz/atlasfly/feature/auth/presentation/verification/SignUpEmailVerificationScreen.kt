@@ -51,7 +51,9 @@ fun SignUpEmailVerificationScreen(
         uiState = uiState,
         onOpenEmail = { openEmailApp(context) },
         onCheck = { viewModel.onIntent(SignUpEmailVerificationUiIntent.CheckVerificationClicked) },
-        onResend = { viewModel.onIntent(SignUpEmailVerificationUiIntent.ResendEmailClicked) },
+        onResend = {
+            viewModel.onIntent(SignUpEmailVerificationUiIntent.ResendEmailClicked(email))
+        },
         modifier = modifier,
     )
 }
