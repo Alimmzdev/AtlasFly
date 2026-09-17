@@ -25,7 +25,14 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     override suspend fun isAuthorized(): Boolean {
-        val remoteAuthorized = authRemoteDatasource.isAuthorized()
+        val remoteAuthorized = try {
+            authRemoteDatasource.isAuthorized()
+        } catch (error: AuthRestException) {
+            if (error.errorCode != AuthErrorCode.UserNotFound) throw error
+
+            clearInvalidSession()
+            false
+        }
         if (remoteAuthorized) {
             persistCurrentSession()
         } else if (authLocalDatasource.isAuthorized()) {
@@ -123,6 +130,18 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun logout() {
         authLocalDatasource.clearAuthTokens()
         authRemoteDatasource.logout()
+    }
+
+    private suspend fun clearInvalidSession() {
+        try {
+            authRemoteDatasource.logout()
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Throwable) {
+            // The server no longer knows this user, but the client session must
+            // still be discarded so the next launch does not retry it.
+        }
+        authLocalDatasource.clearAuthTokens()
     }
 
     private suspend fun persistCurrentSession() {

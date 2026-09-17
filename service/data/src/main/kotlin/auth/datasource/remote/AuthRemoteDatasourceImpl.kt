@@ -110,6 +110,6 @@ class AuthRemoteDatasourceImpl @Inject constructor(
     }
 
     private companion object {
-        const val AUTH_REDIRECT_URL = "atlasfly://auth"
+        const val AUTH_REDIRECT_URL = "atlasfly://auth/callback"
     }
 }
