@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="account_details_subtitle">در اطلس‌فلای با این نام نمایش داده می‌شوید.</string>
+    <string name="account_subscription_subtitle">طرح خود را مدیریت کنید و از امکانات بیشتر سفر بهره ببرید.</string>
+    <string name="account_language_subtitle">زبان برنامه را انتخاب کنید. تغییرات خودکار ذخیره می‌شوند.</string>
     <string name="profile_title">پروفایل</string>
     <string name="profile_your_travel">سفرهای شما</string>
     <string name="profile_settings_and_account">تنظیمات و حساب</string>

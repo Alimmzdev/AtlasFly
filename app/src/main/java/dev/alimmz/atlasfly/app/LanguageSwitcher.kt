@@ -34,6 +34,7 @@ import dev.alimmz.atlasfly.R
 fun LanguageSwitcher(
     modifier: Modifier = Modifier,
     expanded: Boolean = false,
+    showHeader: Boolean = true,
 ) {
     val selectedTag = LocalConfiguration.current.locales[0].language
     val description = stringResource(R.string.language_switcher_cd)
@@ -43,6 +44,7 @@ fun LanguageSwitcher(
             modifier = modifier.fillMaxWidth().selectableGroup(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            if (showHeader) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -64,6 +66,7 @@ fun LanguageSwitcher(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
+            }
             LanguageOption(
                 label = "English",
                 subtitle = stringResource(R.string.language_english_name),
@@ -107,7 +110,8 @@ private fun LanguageOption(
 ) {
     Surface(
         shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surface,
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+            else MaterialTheme.colorScheme.surface,
         border = BorderStroke(
             1.dp,
             if (selected) MaterialTheme.colorScheme.primary
@@ -118,8 +122,8 @@ private fun LanguageOption(
             modifier = Modifier
                 .fillMaxWidth()
                 .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-                .heightIn(min = 80.dp)
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .heightIn(min = 64.dp)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
