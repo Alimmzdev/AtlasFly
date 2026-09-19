@@ -4,6 +4,7 @@ data class Profile(
     val userId: String,
     val displayName: String?,
     val avatarPath: String?,
+    val avatarUrl: String?,
     val createdAt: String,
     val updatedAt: String,
 )
@@ -94,5 +95,7 @@ data class Page<T>(
     val count: Int,
 )
 
-@JvmInline
-value class ProfileImagePath(val value: String)
+data class ProfileImageUpload(
+    val path: String,
+    val avatarUrl: String?,
+)

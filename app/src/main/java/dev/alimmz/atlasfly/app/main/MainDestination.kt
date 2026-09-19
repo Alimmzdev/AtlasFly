@@ -62,7 +62,7 @@ fun MainDestination(
 
         Routes.Main.AccountSettings -> AccountSettingsScreen(
             onBack = onBack,
-            languageSwitcher = { LanguageSwitcher(expanded = true) },
+            languageSwitcher = { LanguageSwitcher(expanded = true, showHeader = false) },
             selectedImageUri = selectedProfileImageUri,
             onSelectImage = { profileImagePicker.launch("image/*") },
             onImageConsumed = { selectedProfileImageUri = null },

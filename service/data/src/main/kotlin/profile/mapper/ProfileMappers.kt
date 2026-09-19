@@ -39,7 +39,14 @@ import profile.model.UpdatePushTokenCommand
 import profile.model.UpdateSavedPlaceCommand
 import profile.model.UpdateSavedTripCommand
 
-fun ProfileDto.toDomain() = Profile(userId, displayName, avatarPath, createdAt, updatedAt)
+fun ProfileDto.toDomain() = Profile(
+    userId = userId,
+    displayName = displayName,
+    avatarPath = avatarPath,
+    avatarUrl = avatarUrl,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+)
 
 fun ProfilePreferencesDto.toDomain() = ProfilePreferences(
     userId = userId,

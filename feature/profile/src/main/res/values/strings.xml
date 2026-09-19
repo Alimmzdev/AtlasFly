@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="account_details_subtitle">This is how you’ll appear on AtlasFly.</string>
+    <string name="account_subscription_subtitle">Manage your plan and unlock more travel features.</string>
+    <string name="account_language_subtitle">Choose your app language. Changes are saved automatically.</string>
     <string name="profile_title">Profile</string>
     <string name="profile_your_travel">Your travel</string>
     <string name="profile_settings_and_account">Settings and account</string>

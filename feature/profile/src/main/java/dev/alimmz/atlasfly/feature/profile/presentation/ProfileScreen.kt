@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
@@ -47,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
+import coil3.compose.AsyncImage
 import profile.model.SubscriptionPlan
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,6 +113,7 @@ fun ProfileScreen(
                 ProfileHeader(
                     displayName = uiState.profile?.displayName,
                     userId = uiState.profile?.userId,
+                    avatarUrl = uiState.profile?.avatarUrl,
                     plan = uiState.subscription?.plan,
                     onClick = onOpenAccountSettings,
                 )
@@ -190,6 +194,7 @@ fun ProfileScreen(
 private fun ProfileHeader(
     displayName: String?,
     userId: String?,
+    avatarUrl: String?,
     plan: SubscriptionPlan?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -218,6 +223,19 @@ private fun ProfileHeader(
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                 )
+                avatarUrl
+                    ?.trim()
+                    ?.takeIf(String::isNotEmpty)
+                    ?.let { url ->
+                        AsyncImage(
+                            model = url,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(CircleShape),
+                        )
+                    }
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
