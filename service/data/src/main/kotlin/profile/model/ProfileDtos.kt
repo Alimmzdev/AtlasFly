@@ -9,6 +9,7 @@ data class ProfileDto(
     @SerialName("user_id") val userId: String,
     @SerialName("display_name") val displayName: String?,
     @SerialName("avatar_path") val avatarPath: String?,
+    @SerialName("avatar_url") val avatarUrl: String?,
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String,
 )
@@ -103,7 +104,10 @@ data class SavedTripsPageDto(
 )
 
 @Serializable
-data class UploadProfileImageResponseDto(val path: String)
+data class UploadProfileImageResponseDto(
+    val path: String,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+)
 
 @Serializable
 data class CreateSavedPlaceRequestDto(

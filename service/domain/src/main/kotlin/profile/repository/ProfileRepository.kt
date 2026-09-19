@@ -6,7 +6,7 @@ import profile.model.CreateSavedPlaceCommand
 import profile.model.CreateSavedTripCommand
 import profile.model.Page
 import profile.model.Profile
-import profile.model.ProfileImagePath
+import profile.model.ProfileImageUpload
 import profile.model.ProfileImageReference
 import profile.model.ProfilePreferences
 import profile.model.PushTokenRegistration
@@ -39,5 +39,5 @@ interface ProfileRepository {
     fun updatePushToken(id: String, command: UpdatePushTokenCommand): Flow<ApiResult<PushTokenRegistration>>
     fun deletePushToken(id: String): Flow<ApiResult<Unit>>
     fun getSubscription(): Flow<ApiResult<Subscription>>
-    fun uploadProfileImage(reference: ProfileImageReference): Flow<ApiResult<ProfileImagePath>>
+    fun uploadProfileImage(reference: ProfileImageReference): Flow<ApiResult<ProfileImageUpload>>
 }

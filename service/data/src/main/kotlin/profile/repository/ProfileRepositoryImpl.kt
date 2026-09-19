@@ -21,7 +21,7 @@ import profile.model.CreateSavedTripCommand
 import profile.model.Page
 import profile.model.PatchField
 import profile.model.Profile
-import profile.model.ProfileImagePath
+import profile.model.ProfileImageUpload
 import profile.model.ProfileImageReference
 import profile.model.ProfileImageResolver
 import profile.model.ProfilePreferences
@@ -159,10 +159,10 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override fun uploadProfileImage(
         reference: ProfileImageReference,
-    ): Flow<ApiResult<ProfileImagePath>> = apiFlow {
+    ): Flow<ApiResult<ProfileImageUpload>> = apiFlow {
         if (reference.contentUri.isBlank()) invalid(ProfileImageResolver.FIELD_IMAGE)
         val response = remoteDataSource.uploadProfileImage(imageResolver.prepare(reference))
-        ProfileImagePath(response.path)
+        ProfileImageUpload(path = response.path, avatarUrl = response.avatarUrl)
     }
 
     private fun <T> apiFlow(block: suspend () -> T): Flow<ApiResult<T>> = flow {
