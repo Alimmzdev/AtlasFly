@@ -29,6 +29,7 @@ data class ProfileUiState(
     val isLoadingSubscription: Boolean = false,
     val isSaving: Boolean = false,
     val isUploading: Boolean = false,
+    val avatarRefreshVersion: Long = 0L,
     val profileAbsent: Boolean = false,
     val error: ApiError? = null,
     val notice: ProfileNotice? = null,
@@ -95,7 +96,15 @@ class ProfileViewModel @Inject constructor(
                     }
                     is ApiResult.Success -> {
                         _uiState.update {
-                            it.copy(isUploading = false, notice = ProfileNotice.ImageUploaded)
+                            it.copy(
+                                profile = it.profile?.copy(
+                                    avatarPath = result.value.path,
+                                    avatarUrl = result.value.avatarUrl,
+                                ),
+                                isUploading = false,
+                                avatarRefreshVersion = System.currentTimeMillis(),
+                                notice = ProfileNotice.ImageUploaded,
+                            )
                         }
                         loadProfile(preserveNotice = true)
                     }
