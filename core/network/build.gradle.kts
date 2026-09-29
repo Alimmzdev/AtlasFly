@@ -14,6 +14,15 @@ val localProperties = Properties().apply {
 val supabasePublishableKey = providers.gradleProperty("SUPABASE_PUBLISHABLE_KEY")
     .orElse(providers.environmentVariable("SUPABASE_PUBLISHABLE_KEY"))
     .orElse(localProperties.getProperty("SUPABASE_PUBLISHABLE_KEY", ""))
+    .map(String::trim)
+
+if (supabasePublishableKey.get().isBlank()) {
+    throw GradleException(
+        "SUPABASE_PUBLISHABLE_KEY is missing. Add your project's publishable key to " +
+            "the root local.properties file (SUPABASE_PUBLISHABLE_KEY=sb_publishable_...), " +
+            "or set it as a Gradle property or environment variable.",
+    )
+}
 
 android {
     namespace = "dev.alimmz.atlasfly.core.network"
