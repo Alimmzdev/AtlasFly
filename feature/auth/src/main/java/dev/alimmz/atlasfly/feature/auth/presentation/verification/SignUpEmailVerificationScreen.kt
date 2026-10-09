@@ -33,6 +33,7 @@ import dev.alimmz.atlasfly.feature.auth.presentation.R
 @Composable
 fun SignUpEmailVerificationScreen(
     email: String,
+    onNavigateToLogin: () -> Unit,
     onNavigateToHome: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SignUpEmailVerificationViewModel = hiltViewModel(),
@@ -43,6 +44,7 @@ fun SignUpEmailVerificationScreen(
         viewModel.events.collect { event ->
             when (event) {
                 SignUpEmailVerificationEvent.NavigateHome -> onNavigateToHome()
+                SignUpEmailVerificationEvent.NavigateLogin -> onNavigateToLogin()
             }
         }
     }

@@ -83,7 +83,7 @@ class SignUpEmailVerificationViewModel @Inject constructor(
             val isVerified: Boolean = isEmailVerifiedUseCase.invoke()
             if (isVerified) {
                 _uiState.update { it.copy(isLoading = false) }
-                sendEvent(SignUpEmailVerificationEvent.NavigateHome)
+                sendEvent(SignUpEmailVerificationEvent.NavigateLogin)
             } else {
                 _uiState.update {
                     it.copy(

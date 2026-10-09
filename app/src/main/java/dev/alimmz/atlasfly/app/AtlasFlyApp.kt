@@ -191,6 +191,9 @@ private fun navEntry(
         is Routes.Auth.SignUpEmailVerification -> NavEntry(key) {
             SignUpEmailVerificationScreen(
                 email = key.email,
+                onNavigateToLogin = {
+                    onNavigate(Routes.Auth.Login)
+                },
                 onNavigateToHome = {
                     viewModel.onEvent(AtlasFlyEvent.Refresh)
                     onNavigate(START_DESTINATION)
