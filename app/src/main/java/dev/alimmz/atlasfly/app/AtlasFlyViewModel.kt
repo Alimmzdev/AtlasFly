@@ -2,6 +2,7 @@ package dev.alimmz.atlasfly.app
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import auth.repository.AuthRepository
 import auth.usecase.GetUnverifiedUserEmailUseCase
 import auth.usecase.IsAuthorizedUseCase
 import auth.usecase.LogoutUseCase
@@ -22,6 +23,7 @@ class AtlasFlyViewModel @Inject constructor(
     private val isAuthorizedUseCase: IsAuthorizedUseCase,
     private val getUnverifiedUserEmailUseCase: GetUnverifiedUserEmailUseCase,
     private val logoutUseCase: LogoutUseCase,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AtlasFlyUiState())
@@ -72,14 +74,33 @@ class AtlasFlyViewModel @Inject constructor(
 
     private fun handleDeepLink(uri: android.net.Uri) {
         viewModelScope.launch {
+            val token = AuthDeepLinkParser.extractToken(uri)
+            val email = AuthDeepLinkParser.extractEmail(uri)
             when (val deepLink: AuthDeepLink? = AuthDeepLinkParser.parse(uri)) {
-                AuthDeepLink.PasswordRecovery -> _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        pendingNavigation = Routes.Auth.ResetPassword,
-                    )
+                AuthDeepLink.PasswordRecovery -> {
+                    if (!token.isNullOrBlank()) {
+                        authRepository.setPasswordResetToken(token, email)
+                    }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            pendingNavigation = Routes.Auth.ResetPassword,
+                        )
+                    }
                 }
-                AuthDeepLink.SessionCallback -> loadData()
+                AuthDeepLink.SessionCallback -> {
+                    if (!token.isNullOrBlank()) {
+                        val type = AuthDeepLinkParser.extractType(uri)
+                        val path = uri.path.orEmpty()
+                        if (type == "signup" || type == "verify_email" || path.contains("verify-email")) {
+                            try {
+                                authRepository.verifyEmailToken(token)
+                            } catch (_: Throwable) {
+                            }
+                        }
+                    }
+                    loadData()
+                }
                 null -> Unit
             }
         }
