@@ -8,4 +8,8 @@ annotation class AtlasFlyHttpClient
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
+annotation class AuthBaseUrl
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
 annotation class SupabasePublishableKey

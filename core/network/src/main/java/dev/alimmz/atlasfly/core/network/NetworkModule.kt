@@ -33,8 +33,18 @@ object NetworkModule {
     }
 
     @Provides
+    @AuthBaseUrl
+    fun provideAuthBaseUrl(): String = BuildConfig.AUTH_PUBLIC_BASE_URL
+
+    @Provides
     @SupabasePublishableKey
     fun provideSupabasePublishableKey(): String = BuildConfig.SUPABASE_PUBLISHABLE_KEY
+
+    @Provides
+    @Singleton
+    fun provideAuthTokenProvider(
+        provider: SessionAuthTokenProvider,
+    ): AuthTokenProvider = provider
 
     @Provides
     @Singleton

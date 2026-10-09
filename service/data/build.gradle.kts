@@ -31,11 +31,13 @@ kotlin {
 }
 
 dependencies {
-    implementation(projects.core.network)
     implementation(projects.core.local)
     implementation(projects.core.network)
     implementation(projects.service.domain)
 
+    implementation(libs.androidx.browser)
+
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.datastore)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 

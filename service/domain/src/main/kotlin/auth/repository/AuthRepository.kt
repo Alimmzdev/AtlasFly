@@ -17,4 +17,6 @@ interface AuthRepository {
     fun updatePassword(newPassword: String): Flow<AuthResult>
     fun refreshTokens(): Flow<AuthResult>
     suspend fun logout()
+    suspend fun verifyEmailToken(token: String)
+    fun setPasswordResetToken(token: String, email: String? = null)
 }

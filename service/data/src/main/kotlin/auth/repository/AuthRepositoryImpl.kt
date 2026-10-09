@@ -2,13 +2,12 @@ package auth.repository
 
 import auth.datasource.local.AuthLocalDatasource
 import auth.datasource.remote.AuthRemoteDatasource
+import auth.model.AuthApiException
 import auth.model.AuthError
 import auth.model.AuthProvider
 import auth.model.AuthResult
 import auth.model.ResetCodeResult
 import dev.alimmz.atlasfly.core.local.model.AuthSessionMetadata
-import io.github.jan.supabase.auth.exception.AuthErrorCode
-import io.github.jan.supabase.auth.exception.AuthRestException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -27,8 +26,8 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun isAuthorized(): Boolean {
         val remoteAuthorized = try {
             authRemoteDatasource.isAuthorized()
-        } catch (error: AuthRestException) {
-            if (error.errorCode != AuthErrorCode.UserNotFound) throw error
+        } catch (error: AuthApiException) {
+            if (error.statusCode != 401 && error.statusCode != 404) throw error
 
             clearInvalidSession()
             false
@@ -132,14 +131,20 @@ class AuthRepositoryImpl @Inject constructor(
         authRemoteDatasource.logout()
     }
 
+    override suspend fun verifyEmailToken(token: String) {
+        authRemoteDatasource.verifyEmail(token)
+    }
+
+    override fun setPasswordResetToken(token: String, email: String?) {
+        authRemoteDatasource.setPasswordResetToken(token, email)
+    }
+
     private suspend fun clearInvalidSession() {
         try {
             authRemoteDatasource.logout()
         } catch (error: CancellationException) {
             throw error
         } catch (_: Throwable) {
-            // The server no longer knows this user, but the client session must
-            // still be discarded so the next launch does not retry it.
         }
         authLocalDatasource.clearSessionMetadata()
     }
@@ -158,20 +163,23 @@ private fun Throwable.toAuthResultFailure(): AuthResult.Failure {
 }
 
 private fun Throwable.toAuthError(): AuthError = when (this) {
-    is AuthRestException -> when (errorCode) {
-        AuthErrorCode.WeakPassword -> AuthError.WeakPassword
-        AuthErrorCode.InvalidCredentials -> AuthError.InvalidCredentials
-        AuthErrorCode.UserNotFound -> AuthError.UserNotFound
-        AuthErrorCode.UserAlreadyExists,
-        AuthErrorCode.EmailExists,
-        AuthErrorCode.IdentityAlreadyExists -> AuthError.AccountExistsDifferentProvider
-        AuthErrorCode.EmailNotConfirmed -> AuthError.EmailNotVerified
-        AuthErrorCode.OtpExpired,
-        AuthErrorCode.BadCodeVerifier,
-        AuthErrorCode.FlowStateExpired,
-        AuthErrorCode.FlowStateNotFound -> AuthError.InvalidActionCode
-        AuthErrorCode.OverRequestRateLimit,
-        AuthErrorCode.OverEmailSendRateLimit -> AuthError.TooManyAttempts
+    is AuthApiException -> when (statusCode) {
+        400 -> {
+            val errorMap = problem?.errors.orEmpty()
+            val detail = problem?.detail.orEmpty()
+            if (errorMap.containsKey("password") || detail.contains("password", ignoreCase = true)) {
+                AuthError.WeakPassword
+            } else if (detail.contains("token", ignoreCase = true) || detail.contains("expired", ignoreCase = true)) {
+                AuthError.InvalidActionCode
+            } else {
+                AuthError.InvalidCredentials
+            }
+        }
+        401 -> AuthError.InvalidCredentials
+        403 -> AuthError.EmailNotVerified
+        404 -> AuthError.UserNotFound
+        409 -> AuthError.AccountExistsDifferentProvider
+        429 -> AuthError.TooManyAttempts
         else -> AuthError.Unknown(cause = this)
     }
     is CancellationException -> AuthError.Cancelled

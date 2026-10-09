@@ -25,7 +25,7 @@ import kotlin.coroutines.cancellation.CancellationException
 class AtlasFlyApiClient @Inject constructor(
     @AtlasFlyHttpClient private val httpClient: HttpClient,
     private val authTokenProvider: AuthTokenProvider,
-    @SupabasePublishableKey private val publishableKey: String,
+    @SupabasePublishableKey private val publishableKey: String = "",
 ) {
     private val refreshMutex = Mutex()
 
@@ -36,10 +36,6 @@ class AtlasFlyApiClient @Inject constructor(
         bodyFactory: (() -> OutgoingContent)? = null,
         canRetryAfterUnauthorized: Boolean = true,
     ): AtlasFlyHttpResponse {
-        if (publishableKey.isBlank()) {
-            throw NetworkClientException.Configuration("SUPABASE_PUBLISHABLE_KEY is missing")
-        }
-
         val originalToken = authTokenProvider.getToken()
         val firstResponse = send(
             method = method,
@@ -97,7 +93,9 @@ class AtlasFlyApiClient @Inject constructor(
                     this.parameters.appendAll(parameters)
                 }
                 header(HttpHeaders.Authorization, "Bearer ${token.value}")
-                header(API_KEY_HEADER, publishableKey)
+                if (publishableKey.isNotBlank()) {
+                    header(API_KEY_HEADER, publishableKey)
+                }
                 bodyFactory?.let { setBody(it()) }
             }
             AtlasFlyHttpResponse(

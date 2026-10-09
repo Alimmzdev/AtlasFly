@@ -16,4 +16,6 @@ interface AuthRemoteDatasource {
     suspend fun updatePassword(newPassword: String)
     suspend fun refreshTokens()
     suspend fun logout()
+    suspend fun verifyEmail(token: String)
+    fun setPasswordResetToken(token: String, email: String? = null)
 }

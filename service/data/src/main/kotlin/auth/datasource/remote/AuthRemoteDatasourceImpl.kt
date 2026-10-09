@@ -1,112 +1,336 @@
 package auth.datasource.remote
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import auth.datasource.local.AuthLocalDatasource
+import auth.model.AccountView
+import auth.model.AuthApiException
 import auth.model.AuthProvider
+import auth.model.AuthenticationSession
+import auth.model.EmailRequest
+import auth.model.LoginRequest
+import auth.model.MessageResponse
+import auth.model.ProblemDetails
+import auth.model.RegisterRequest
+import auth.model.ResetPasswordRequest
+import auth.model.VerifyEmailRequest
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.alimmz.atlasfly.core.local.model.AuthSessionMetadata
-import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.OtpType
-import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.auth.providers.Github as SupabaseGithub
-import io.github.jan.supabase.auth.providers.Google as SupabaseGoogle
-import io.github.jan.supabase.auth.providers.builtin.Email
+import dev.alimmz.atlasfly.core.network.AtlasFlyHttpClient
+import dev.alimmz.atlasfly.core.network.AuthBaseUrl
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
+import javax.inject.Singleton
+import androidx.core.net.toUri
 
+@Singleton
 class AuthRemoteDatasourceImpl @Inject constructor(
-    private val supabase: SupabaseClient,
+    @AtlasFlyHttpClient private val httpClient: HttpClient,
+    private val json: Json,
+    @AuthBaseUrl private val authBaseUrl: String,
+    @ApplicationContext private val context: Context,
+    private val authLocalDatasource: AuthLocalDatasource,
 ) : AuthRemoteDatasource {
 
+    private var currentSession: AuthSessionMetadata? = null
+    private var lastUnverifiedEmail: String? = null
+    private var pendingSignupPassword: String? = null
+    private var pendingRecoveryToken: String? = null
+    private var pendingRecoveryEmail: String? = null
+    private var lastPasswordResetEmail: String? = null
+
     override suspend fun isAuthorized(): Boolean {
-        supabase.auth.awaitInitialization()
-        if (supabase.auth.currentSessionOrNull() == null) return false
-        val user = supabase.auth.retrieveUserForCurrentSession(updateSession = true)
-        return user.emailConfirmedAt != null
+        val localSession = authLocalDatasource.getSessionMetadata()
+        val token = localSession.accessToken.takeIf { it.isNotBlank() }
+            ?: currentSession?.accessToken?.takeIf { it.isNotBlank() }
+            ?: return false
+
+        val response = httpClient.get("$authBaseUrl/api/v1/auth/me") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+
+        if (response.status == HttpStatusCode.Unauthorized || response.status == HttpStatusCode.NotFound) {
+            currentSession = null
+            authLocalDatasource.clearSessionMetadata()
+            return false
+        }
+
+        if (response.status.value !in 200..299) {
+            val problem = parseProblemDetails(response)
+            throw AuthApiException(response.status.value, problem)
+        }
+
+        val account = json.decodeFromString<AccountView>(response.bodyAsText())
+        val updatedSession = localSession.copy(
+            uid = account.id,
+            email = account.email,
+            emailVerified = account.emailVerified,
+        )
+        currentSession = updatedSession
+        authLocalDatasource.saveSessionMetadata(updatedSession)
+        return account.emailVerified
     }
 
     override suspend fun login(provider: AuthProvider) {
         when (provider) {
-            is AuthProvider.EmailPassword -> supabase.auth.signInWith(Email) {
-                email = provider.email.trim()
-                password = provider.password
+            is AuthProvider.EmailPassword -> {
+                val request = LoginRequest(
+                    email = provider.email.trim(),
+                    password = provider.password,
+                )
+                val response = httpClient.post("$authBaseUrl/api/v1/auth/login") {
+                    contentType(ContentType.Application.Json)
+                    setBody(json.encodeToString(LoginRequest.serializer(), request))
+                }
+
+                if (response.status == HttpStatusCode.Forbidden) {
+                    lastUnverifiedEmail = provider.email.trim()
+                    val problem = parseProblemDetails(response)
+                    throw AuthApiException(403, problem, problem?.detail ?: "Email not verified")
+                }
+
+                val session = handleResponse<AuthenticationSession>(response)
+                val metadata = AuthSessionMetadata(
+                    accessToken = session.accessToken,
+                    tokenType = session.tokenType,
+                    uid = session.user.id,
+                    email = session.user.email,
+                    emailVerified = session.user.emailVerified,
+                    expiresAt = session.expiresAt.orEmpty(),
+                )
+                currentSession = metadata
+                lastUnverifiedEmail = null
+                pendingSignupPassword = null
+                authLocalDatasource.saveSessionMetadata(metadata)
             }
-            AuthProvider.Google -> supabase.auth.signInWith(
-                provider = SupabaseGoogle,
-                redirectUrl = AUTH_REDIRECT_URL,
-            )
-            AuthProvider.Github -> supabase.auth.signInWith(
-                provider = SupabaseGithub,
-                redirectUrl = AUTH_REDIRECT_URL,
-            ) {
-                scopes.add("read:user")
-                scopes.add("user:email")
+
+            AuthProvider.Google -> {
+                launchOAuth("google")
+            }
+
+            AuthProvider.Github -> {
+                launchOAuth("github")
             }
         }
     }
 
     override suspend fun signup(provider: AuthProvider.EmailPassword) {
-        supabase.auth.signUpWith(
-            provider = Email,
-            redirectUrl = AUTH_REDIRECT_URL,
-        ) {
-            email = provider.email.trim()
-            password = provider.password
+        val request = RegisterRequest(
+            email = provider.email.trim(),
+            password = provider.password,
+        )
+        val response = httpClient.post("$authBaseUrl/api/v1/auth/register") {
+            contentType(ContentType.Application.Json)
+            setBody(json.encodeToString(RegisterRequest.serializer(), request))
         }
+        handleResponse<MessageResponse>(response)
+        lastUnverifiedEmail = provider.email.trim()
+        pendingSignupPassword = provider.password
     }
 
     override suspend fun isEmailVerified(): Boolean {
-        val user = supabase.auth.currentUserOrNull() ?: return false
-        return user.emailConfirmedAt != null
+        val localSession = authLocalDatasource.getSessionMetadata()
+        val token = localSession.accessToken.takeIf { it.isNotBlank() }
+            ?: currentSession?.accessToken?.takeIf { it.isNotBlank() }
+
+        if (!token.isNullOrBlank()) {
+            return try {
+                val response = httpClient.get("$authBaseUrl/api/v1/auth/me") {
+                    header(HttpHeaders.Authorization, "Bearer $token")
+                }
+                if (response.status.value in 200..299) {
+                    val account = json.decodeFromString<AccountView>(response.bodyAsText())
+                    val updated = localSession.copy(
+                        uid = account.id,
+                        email = account.email,
+                        emailVerified = account.emailVerified,
+                    )
+                    currentSession = updated
+                    authLocalDatasource.saveSessionMetadata(updated)
+                    account.emailVerified
+                } else {
+                    false
+                }
+            } catch (_: Exception) {
+                localSession.emailVerified
+            }
+        }
+
+        val email = lastUnverifiedEmail ?: localSession.email.takeIf { it.isNotBlank() }
+        val password = pendingSignupPassword
+        if (!email.isNullOrBlank() && !password.isNullOrBlank()) {
+            return try {
+                login(AuthProvider.EmailPassword(email, password))
+                true
+            } catch (e: AuthApiException) {
+                if (e.statusCode == 403) {
+                    false
+                } else {
+                    throw e
+                }
+            }
+        }
+
+        return false
     }
 
     override suspend fun getUnverifiedUserEmail(): String? {
-        val user = supabase.auth.currentUserOrNull() ?: return null
-        return user.email.takeIf { user.emailConfirmedAt == null }
+        return lastUnverifiedEmail
+            ?: authLocalDatasource.getSessionMetadata().takeIf { !it.emailVerified }?.email?.takeIf { it.isNotBlank() }
     }
 
     override suspend fun getCurrentSession(): AuthSessionMetadata? {
-        val session = supabase.auth.currentSessionOrNull() ?: return null
-        val user = session.user ?: return null
-        return AuthSessionMetadata(
-            uid = user.id,
-            email = user.email.orEmpty(),
-            emailVerified = user.emailConfirmedAt != null,
-        )
+        return currentSession ?: authLocalDatasource.getSessionMetadata().takeIf { it.accessToken.isNotBlank() }
     }
 
     override suspend fun resendEmailVerification(email: String) {
-        supabase.auth.resendEmail(
-            type = OtpType.Email.SIGNUP,
-            email = email.trim(),
-            redirectUrl = AUTH_REDIRECT_URL,
-        )
+        val request = EmailRequest(email = email.trim())
+        val response = httpClient.post("$authBaseUrl/api/v1/auth/resend-verification") {
+            contentType(ContentType.Application.Json)
+            setBody(json.encodeToString(EmailRequest.serializer(), request))
+        }
+        handleResponse<MessageResponse>(response)
     }
 
     override suspend fun sendPasswordResetEmail(email: String) {
-        supabase.auth.resetPasswordForEmail(
-            email = email.trim(),
-            redirectUrl = AUTH_REDIRECT_URL,
-        )
+        val request = EmailRequest(email = email.trim())
+        val response = httpClient.post("$authBaseUrl/api/v1/auth/forgot-password") {
+            contentType(ContentType.Application.Json)
+            setBody(json.encodeToString(EmailRequest.serializer(), request))
+        }
+        handleResponse<MessageResponse>(response)
+        lastPasswordResetEmail = email.trim()
     }
 
     override suspend fun verifyPasswordRecoverySession(): String {
-        val user = supabase.auth.currentUserOrNull()
-            ?: throw IllegalStateException("No active password recovery session")
-        return user.email ?: throw IllegalStateException("Recovery session has no email")
+        pendingRecoveryToken ?: throw IllegalStateException("No active password recovery session")
+        return pendingRecoveryEmail ?: lastPasswordResetEmail ?: ""
     }
 
     override suspend fun updatePassword(newPassword: String) {
-        supabase.auth.updateUser {
-            password = newPassword
+        val token = pendingRecoveryToken ?: throw IllegalStateException("No active password recovery token")
+        val request = ResetPasswordRequest(
+            token = token,
+            newPassword = newPassword,
+        )
+        val response = httpClient.post("$authBaseUrl/api/v1/auth/reset-password") {
+            contentType(ContentType.Application.Json)
+            setBody(json.encodeToString(ResetPasswordRequest.serializer(), request))
         }
+        handleResponse<MessageResponse>(response)
+        pendingRecoveryToken = null
+        pendingRecoveryEmail = null
+        currentSession = null
+        authLocalDatasource.clearSessionMetadata()
     }
 
     override suspend fun refreshTokens() {
-        supabase.auth.refreshCurrentSession()
+        val localSession = authLocalDatasource.getSessionMetadata()
+        val token = localSession.accessToken.takeIf { it.isNotBlank() }
+            ?: currentSession?.accessToken?.takeIf { it.isNotBlank() }
+            ?: throw AuthApiException(401, null, "No active session")
+
+        val response = httpClient.get("$authBaseUrl/api/v1/auth/me") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
+        if (response.status.value !in 200..299) {
+            val problem = parseProblemDetails(response)
+            throw AuthApiException(response.status.value, problem)
+        }
     }
 
     override suspend fun logout() {
-        supabase.auth.signOut()
+        try {
+            val localSession = authLocalDatasource.getSessionMetadata()
+            val token = localSession.accessToken.takeIf { it.isNotBlank() }
+                ?: currentSession?.accessToken?.takeIf { it.isNotBlank() }
+            if (!token.isNullOrBlank()) {
+                httpClient.post("$authBaseUrl/api/v1/auth/logout") {
+                    header(HttpHeaders.Authorization, "Bearer $token")
+                }
+            }
+        } catch (_: Exception) {
+        } finally {
+            currentSession = null
+            pendingRecoveryToken = null
+            pendingRecoveryEmail = null
+            pendingSignupPassword = null
+            lastUnverifiedEmail = null
+            authLocalDatasource.clearSessionMetadata()
+        }
     }
 
-    private companion object {
-        const val AUTH_REDIRECT_URL = "atlasfly://auth/callback"
+    override suspend fun verifyEmail(token: String) {
+        val request = VerifyEmailRequest(token = token)
+        val response = httpClient.post("$authBaseUrl/api/v1/auth/verify-email") {
+            contentType(ContentType.Application.Json)
+            setBody(json.encodeToString(VerifyEmailRequest.serializer(), request))
+        }
+        handleResponse<MessageResponse>(response)
+    }
+
+    override fun setPasswordResetToken(token: String, email: String?) {
+        pendingRecoveryToken = token
+        if (!email.isNullOrBlank()) {
+            pendingRecoveryEmail = email
+        }
+    }
+
+    private fun launchOAuth(provider: String) {
+        val url = "$authBaseUrl/api/v1/auth/oauth/$provider"
+        try {
+            val customTabsIntent = androidx.browser.customtabs.CustomTabsIntent.Builder().build()
+            customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            customTabsIntent.launchUrl(context, url.toUri())
+        } catch (e: Exception) {
+            // Fallback to system browser if Custom Tabs isn't available
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        }
+    }
+
+    private suspend inline fun <reified T> handleResponse(response: HttpResponse): T {
+        val status = response.status.value
+        val body = response.bodyAsText()
+        if (status in 200..299) {
+            if (body.isBlank()) {
+                if (T::class == MessageResponse::class) {
+                    @Suppress("UNCHECKED_CAST")
+                    return MessageResponse() as T
+                }
+            }
+            return json.decodeFromString(body)
+        }
+        val problem = try {
+            json.decodeFromString<ProblemDetails>(body)
+        } catch (_: Exception) {
+            ProblemDetails(status = status, detail = body.ifBlank { null })
+        }
+        throw AuthApiException(status, problem)
+    }
+
+    private suspend fun parseProblemDetails(response: HttpResponse): ProblemDetails? {
+        return try {
+            val body = response.bodyAsText()
+            if (body.isNotBlank()) {
+                json.decodeFromString<ProblemDetails>(body)
+            } else null
+        } catch (_: Exception) {
+            null
+        }
     }
 }

@@ -28,7 +28,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.datastore)
+    api(libs.datastore)
     implementation(libs.tink.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.annotation.experimental)

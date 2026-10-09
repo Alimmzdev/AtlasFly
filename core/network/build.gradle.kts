@@ -11,24 +11,29 @@ val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) file.inputStream().use(::load)
 }
+
+val authBaseUrl = providers.gradleProperty("AUTH_PUBLIC_BASE_URL")
+    .orElse(providers.environmentVariable("AUTH_PUBLIC_BASE_URL"))
+    .orElse(localProperties.getProperty("AUTH_PUBLIC_BASE_URL", "http://192.168.1.68:8080"))
+    .map(String::trim)
+    .orElse("http://192.168.1.68:8080")
+
 val supabasePublishableKey = providers.gradleProperty("SUPABASE_PUBLISHABLE_KEY")
     .orElse(providers.environmentVariable("SUPABASE_PUBLISHABLE_KEY"))
     .orElse(localProperties.getProperty("SUPABASE_PUBLISHABLE_KEY", ""))
     .map(String::trim)
-
-if (supabasePublishableKey.get().isBlank()) {
-    throw GradleException(
-        "SUPABASE_PUBLISHABLE_KEY is missing. Add your project's publishable key to " +
-            "the root local.properties file (SUPABASE_PUBLISHABLE_KEY=sb_publishable_...), " +
-            "or set it as a Gradle property or environment variable.",
-    )
-}
+    .orElse("")
 
 android {
     namespace = "dev.alimmz.atlasfly.core.network"
     compileSdk = 37
     defaultConfig {
         minSdk = 24
+        buildConfigField(
+            "String",
+            "AUTH_PUBLIC_BASE_URL",
+            "\"${authBaseUrl.get().replace("\\", "\\\\").replace("\"", "\\\"")}\"",
+        )
         buildConfigField(
             "String",
             "SUPABASE_PUBLISHABLE_KEY",
@@ -51,13 +56,13 @@ kotlin {
     }
 }
 dependencies {
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    api(platform(libs.supabase.bom))
-    api(libs.supabase.auth)
+    implementation(projects.core.local)
+
+    api(libs.ktor.client.core)
+    api(libs.ktor.client.okhttp)
+    api(libs.ktor.client.content.negotiation)
+    api(libs.ktor.client.logging)
+    api(libs.ktor.serialization.kotlinx.json)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     debugImplementation(libs.chucker.full)

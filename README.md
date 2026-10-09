@@ -62,7 +62,7 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 |---|---|
 | **Architecture** | 17-module Clean Architecture organized across `app`, `feature`, `service`, and `core` |
 | **UI pattern** | Compose + MVI (`UiState` / `UiIntent` / `Event`) in ViewModels |
-| **Auth** | Email/password, Google, GitHub via Supabase Auth |
+| **Auth** | Email/password, Google, GitHub via AtlasFly Auth API |
 | **Security** | Auth tokens encrypted with Google Tink + DataStore |
 | **Navigation** | Type-safe routes with Navigation 3 |
 | **Deep links** | Email verification handled in `MainActivity` → `AtlasFlyViewModel` |
@@ -79,10 +79,10 @@ If you are a recruiter, hiring manager, or fellow Android developer, this reposi
 - [x] Jetpack Compose UI with Material 3
 - [x] Splash screen, auth gate, and main app shell with bottom navigation
 - [x] Email/password sign-up and sign-in
-- [x] Google OAuth through Supabase Auth
+- [x] Google OAuth through AtlasFly Auth
 - [x] GitHub OAuth login
 - [x] Sign-up email verification screen with resend
-- [x] Supabase deep links for email verification, OAuth, and password recovery
+- [x] Deep links for email verification, OAuth, and password recovery
 - [x] Encrypted auth token persistence (Tink + DataStore)
 - [x] Ktor HTTP client with debug network inspection (Chucker)
 - [x] Hilt dependency injection across layers
@@ -115,7 +115,7 @@ AtlasFly follows **Clean Architecture** with explicit module boundaries and a **
    │ :feature  │    │  :service  │    │    :core    │
    │ auth      │    │  domain    │    │  network    │
    │ home      │    │  data      │    │  local      │
-   │ search …  │    │ (Supabase) │    │  navigation │
+   │ search …  │    │  (Backend) │    │  navigation │
    └───────────┘    └────────────┘    └─────────────┘
 ```
 
@@ -150,7 +150,7 @@ AtlasFly/
 │   └── trips/              # Saved and active trips UI
 ├── service/
 │   ├── domain/             # Auth use cases, models, repository contracts
-│   └── data/               # Supabase Auth, local/remote data sources
+│   └── data/               # AtlasFly Auth API, local/remote data sources
 └── gradle/libs.versions.toml
 ```
 
@@ -165,7 +165,7 @@ AtlasFly/
 | Architecture | Clean Architecture, MVI-style UDF, multi-module |
 | DI | Hilt 2.60.1, KSP 2.3.10 |
 | Navigation | Navigation 3 (type-safe routes) |
-| Auth | Supabase Auth, Google & GitHub OAuth |
+| Auth | AtlasFly Auth API, Google & GitHub OAuth |
 | Networking | Ktor 3.5.x (OkHttp engine), kotlinx-serialization |
 | Image loading | Coil 3.5.x |
 | Local storage | DataStore 1.2.1, Google Tink 1.23.0 |
@@ -201,30 +201,15 @@ These map directly to common **EU Android job requirements**:
 - JDK 17+
 - Android SDK 37
 
-### Supabase setup (required for auth)
+### Backend setup (required for auth)
 
-1. Enable **Email**, **Google**, and **GitHub** providers in Supabase Authentication
-2. Add `atlasfly://auth` to Authentication → URL Configuration → Redirect URLs
-3. Configure the Google and GitHub provider client credentials in Supabase
-4. Add the project publishable key to the ignored `local.properties` file:
+Configure your AtlasFly authentication backend base URL in `local.properties` (or set as a Gradle property or environment variable):
 
 ```properties
-SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
+AUTH_PUBLIC_BASE_URL=http://localhost:8080
 ```
 
-Only use a publishable key in the Android app. Never add a secret or service-role key.
-
-### Supabase Edge Function setup
-
-Add the AtlasFly Supabase publishable key to the ignored `local.properties` file, or provide the
-same name as a Gradle property or environment variable:
-
-```properties
-SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
-```
-
-Only a publishable key belongs in the Android application. Never use a Supabase secret or legacy
-`service_role` key in this property.
+Default is `http://localhost:8080` (or `http://192.168.1.68:8080` when testing with Android Emulator).
 
 ### Build & run
 
@@ -246,7 +231,7 @@ Only a publishable key belongs in the Android application. Never use a Supabase 
 
 - **Package scheme:** `dev.alimmz.atlasfly.{layer}.{module}`
 - **Feature modules** own their screens, ViewModels, and UI components
-- **Service modules** encapsulate backend integration (Supabase Auth)
+- **Service modules** encapsulate backend integration (AtlasFly Auth API)
 - **Core modules** provide shared infrastructure consumed by features
 - **Use cases** expose single-responsibility domain operations
 - **Version catalog:** bump dependencies in `gradle/libs.versions.toml`, reference via `libs.*`
